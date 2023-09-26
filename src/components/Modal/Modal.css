@@ -1,0 +1,71 @@
+/**
+ * @notice Modal
+ */
+.component-modal {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 101;
+  transition-duration: 0.3s;
+  padding: var(--padding-large);
+}
+
+.component-modal__close-btn {
+  position: absolute;
+  right: 30px;
+  top: 30px;
+  height: 40px;
+  width: 40px;
+  background-image: url("../../assets/close.png");
+  background-size: contain;
+  background-position: center;
+  cursor: pointer;
+}
+
+.component-modal__modal {
+  width: 100%;
+  max-width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background-color: #111;
+  border-radius: var(--border-radius-medium);
+  border: 2px solid var(--color-purple);
+  padding: 30px;
+  box-sizing: border-box;
+  box-shadow: 0px 0px 120px var(--color-blue);
+}
+
+.component-modal__modal__item {
+  padding: 20px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 2px solid var(--color-yellow);
+  border-radius: var(--border-radius-medium);
+  transition-duration: 0.5s;
+  cursor: pointer;
+  background-color: #111;
+}
+
+.component-modal__modal__item:hover {
+  background-color: var(--color-yellow);
+}
+
+.component-modal__modal__item__img {
+  height: 50px;
+  width: 50px;
+}
+
+.component-modal__modal__item__text {
+  color: white;
+  font-size: 18px;
+}

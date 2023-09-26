@@ -1,0 +1,82 @@
+:root {
+  /* Flex/Grid Gap */
+  --gap-small: 8px;
+  --gap-medium: 16px;
+  --gap-large: 24px;
+
+  /* Padding */
+  --padding-extra-small: 4px;
+  --padding-small: 8px;
+  --padding-small-half: 12px;
+  --padding-medium: 16px;
+  --padding-large: 24px;
+  --padding-extra-large: 32px;
+
+  /* Palette */
+  --color-dark: #222;
+  --color-purple: #9d8df1;
+  --color-blue: #a1b3d9;
+  --color-mint: #95f2d9;
+  --color-light: #1cfeba;
+  --color-white: whitesmoke;
+  --color-pink: #d64550;
+  --color-light-pink: #eba2a8;
+  --color-yellow: #e1f18d;
+  --color-orange: #f3af31;
+
+  /* Border-radius */
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+  --border-radius-extra-large: 28px;
+}
+
+h2 {
+  padding: 0px;
+  margin: 0px;
+}
+
+p {
+  margin: var(--padding-small);
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input:active,
+input:focus {
+  outline: none;
+}
+
+input {
+  background-color: inherit;
+  border: 0px;
+  color: var(--cygwhite);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  font-size: 24px;
+  text-overflow: ellipsis;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: whitesmoke;
+  margin: auto;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
