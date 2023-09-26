@@ -4,11 +4,8 @@ import React, { useState, useEffect, useRef, KeyboardEvent, useCallback } from "
 import { ethers, BigNumber } from "ethers";
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
 import {
-  usePrepareContractWrite,
-  useContractWrite,
-  useBalance,
   useAccount,
-  useContractRead,
+  usePublicClient,
 } from "wagmi";
 
 import {
@@ -53,6 +50,7 @@ const Home = () => {
   // ------------ Refs -------------
 
   const { address, isConnecting, isDisconnected } = useAccount();
+  const client = usePublicClient();
 
   /** @notice Deposit/Withdrawal amount input */
   const amountRef = useRef<HTMLInputElement>(null);
@@ -72,6 +70,11 @@ const Home = () => {
 
   /** @notice Switches between xDAI and WXDAI */
   const [nativeAsset, setNativeAsset] = useState<boolean>(true);
+
+  const [shouldUpdate, setShouldUpdate] = useState<boolean>(true);
+
+  const [currentUser, setCurrentUser] = useState<`0x${string}`>(`0x`);
+  const [currentChain, setCurrentChain] = useState<string>("");
 
   // Deposit
 
@@ -108,7 +111,7 @@ const Home = () => {
   /** @notice Total Assets held by the vault contract */
   const [totalAssets, setTotalAssets] = useState<string>("-");
 
-  //const [vaultAPY, setVaultAPY] = useState<string>("-");
+  const [vaultAPY, setVaultAPY] = useState<string>("-");
 
   /** @notice Total Shares minted by the vault contract */
   const [totalShares, setTotalShares] = useState<string>("-");
@@ -121,13 +124,10 @@ const Home = () => {
     }
   };
 
-//  useConvertToShares(depositAmount);
+  //  useConvertToShares(depositAmount);
 
- // useConvertToAssets(sharesAmount);
-
-  const newTotalSupply = useTotalSupply();
+  // useConvertToAssets(sharesAmount);
   //assetBalance = useUserBalance(address);
-  const newDepositAmount = useTotalReserves();
 
   // User asset balance
   useUserBalanceToken(RESERVE_TOKEN_ADDRESS, address);
@@ -163,33 +163,24 @@ const Home = () => {
   /** @notice Swap between deposit/redeem modal */
   const swapModal = () => {
     setDeposit(() => !deposit);
-
     // Refresh inputs on every modal swap
     setDepositAmount(ethers.utils.parseUnits("0"));
     setSharesAmount(ethers.utils.parseUnits("0"));
     setActionReceiver("");
 
-    if (receiverRef.current && amountRef.current && amountConvertRef.current) {
-      amountRef.current.value = "";
-      receiverRef.current.value = "";
-      amountConvertRef.current.value = "";
-    }
+    if (amountRef.current) amountRef.current.value = "";
+    if (receiverRef.current) receiverRef.current.value = "";
+    if (amountConvertRef.current) amountConvertRef.current.value = "";
   };
 
   /** @notice Swap between xdai/wxdai asset */
   const swapAsset = () => {
     setNativeAsset(() => !nativeAsset);
-
-    // Refresh inputs on every modal swap
-    setDepositAmount(ethers.utils.parseUnits("0"));
-    setSharesAmount(ethers.utils.parseUnits("0"));
     setActionReceiver("");
 
-    if (receiverRef.current && amountRef.current && amountConvertRef.current) {
-      amountRef.current.value = "";
-      receiverRef.current.value = "";
-      amountConvertRef.current.value = "";
-    }
+    //if (amountRef.current)amountRef.current.value = "";
+    if (receiverRef.current) receiverRef.current.value = "";
+    if (amountConvertRef.current) amountConvertRef.current.value = "";
   };
 
   /** @notice Escape from connect modal */
@@ -199,9 +190,48 @@ const Home = () => {
     }
   });
 
-  // Router APY
+  useEffect(() => {
+    if (address && address != currentUser){
+      setCurrentUser(address);
+      setShouldUpdate(true);
+      swapModal();
+    }
+    if (client.key != currentChain)
+      setCurrentChain(client.key);
+      setShouldUpdate(true);
+  },[
+    address,
+    client.key
+  ]);
 
-  const vaultAPY = useVaultAPY();
+  const newTotalSupply = useTotalSupply();
+  const newDepositAmount = useTotalReserves();
+  const newVaultAPY = useVaultAPY();
+  const initialAssetBalance = useUserBalanceToken(RESERVE_TOKEN_ADDRESS, address);
+  const initialXDAIBalance = useUserBalance(address);
+  const initialSharesBalance = useUserBalanceToken(ERC4626_VAULT_ADDRESS, address);
+  const initialDepositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
+  const initialWithdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
+  useEffect(() => {
+    if (shouldUpdate || isConnecting){
+    setTotalShares(newTotalSupply);
+    setTotalAssets(newDepositAmount);
+    setVaultAPY(newVaultAPY);
+    setXDAIBalance(initialXDAIBalance);
+    setAssetBalance(initialAssetBalance);
+    setSharesBalance(initialSharesBalance);
+    setDepositAllowance(initialDepositAllowance);
+    setWithdrawAllowance(initialWithdrawAllowance);
+    setShouldUpdate(false);
+    }
+  }, [
+    shouldUpdate,
+    XDAIBalance,
+    sharesBalance,
+    assetBalance,
+    depositAllowance,
+    withdrawAllowance,
+  ]);
 
   return (
     <div className="page-home">
@@ -225,7 +255,7 @@ const Home = () => {
                   ISSUED SHARES <div className="page-component__cards-data__separator"></div>
                 </div>
               </div>
-              <div className="page-component__cards-data__body" onLoadedData={()=>setTotalShares(newTotalSupply)}>
+              <div className="page-component__cards-data__body">
                 <div className="page-component__cards-data__row">
                   <div className="page-component__cards-data__number">{totalShares}</div>
                   <div>sDAI</div>
@@ -238,7 +268,7 @@ const Home = () => {
                   VAULT RESERVES<div className="page-component__cards-data__separator"></div>
                 </div>
               </div>
-              <div className="page-component__cards-data__body" onLoadedData={()=>setTotalAssets(newDepositAmount)}>
+              <div className="page-component__cards-data__body">
                 <div className="page-component__cards-data__row">
                   <div className="page-component__cards-data__number">{totalAssets}</div>
                   <div>WXDAI</div>
@@ -309,10 +339,10 @@ const Home = () => {
                     <div className="page-component__main__input">
                       <input
                         type="number"
-                        name="email"
                         placeholder="0.0"
                         onChange={(e: any) => {
-                          setDepositAmount(ethers.utils.parseUnits(e.target.value, 18));
+                          if (e.target.value)
+                            setDepositAmount(ethers.utils.parseUnits(e.target.value, 18));
                         }}
                         onKeyDown={(event: KeyboardEvent) => removeScroll(event)}
                         autoComplete="off"
@@ -329,7 +359,7 @@ const Home = () => {
                           } else {
                             if (amountRef.current && XDAIBalance) {
                               amountRef.current.value = XDAIBalance;
-                              setDepositAmount(ethers.utils.parseUnits(XDAIBalance));
+                              setDepositAmount(ethers.utils.parseUnits(XDAIBalance).sub("10000000000000000"));
                               // ConvertToShares(ethers.utils.parseUnits(XDAIBalance));
                             }
                           }
@@ -346,7 +376,7 @@ const Home = () => {
                       alt={!deposit ? "WXDAI" : "sDAI"}
                     />
                     <div className="page-component__main__input">
-                    <Input assets={depositAmount} shares={sharesAmount} deposit={deposit}/>
+                      <Input assets={depositAmount} shares={sharesAmount} deposit={deposit} />
                     </div>
                   </div>
                 </div>
@@ -359,7 +389,9 @@ const Home = () => {
                       <input
                         type="text"
                         placeholder="0x124...5678"
-                        onChange={(e: any) => setActionReceiver(e.target.value)}
+                        onChange={(e: any) => {
+                          if (e.target.value) setActionReceiver(e.target.value);
+                        }}
                         onKeyDown={e => removeScroll(e)}
                         autoComplete="off"
                         ref={receiverRef}
@@ -376,12 +408,17 @@ const Home = () => {
                 <div>&nbsp;</div>
                 <div className="page-component__main__input__btns">
                   {!nativeAsset && depositAllowance?.lt(depositAmount) ? (
-                     <ApproveAssets amount={depositAmount}/>
+                    <ApproveAssets amount={depositAmount} />
+                  ) : nativeAsset ? (
+                    <DepositNativeAssets
+                      amount={depositAmount._isBigNumber ? depositAmount : BigNumber.from(0)}
+                      receiver={actionReceiver}
+                    />
                   ) : (
-                    nativeAsset ? 
-                    <DepositNativeAssets amount={depositAmount} receiver={actionReceiver}/>
-                    :
-                    <DepositAssets amount={depositAmount} receiver={actionReceiver}/>
+                    <DepositAssets
+                      amount={depositAmount._isBigNumber ? depositAmount : BigNumber.from(0)}
+                      receiver={actionReceiver}
+                    />
                   )}
                 </div>
               </div>
@@ -437,7 +474,8 @@ const Home = () => {
                         name="email"
                         placeholder="0.0"
                         onChange={(e: any) => {
-                          setSharesAmount(ethers.utils.parseUnits(e.target.value, 18));
+                          if (e.target.value)
+                            setSharesAmount(ethers.utils.parseUnits(e.target.value, 18));
                         }}
                         onKeyDown={(event: KeyboardEvent) => removeScroll(event)}
                         autoComplete="off"
@@ -463,7 +501,7 @@ const Home = () => {
                       alt={!deposit ? "WXDAI" : "sDAI"}
                     />
                     <div className="page-component__main__input">
-                    <Input assets={depositAmount} shares={sharesAmount} deposit={deposit}/>
+                      <Input assets={depositAmount} shares={sharesAmount} deposit={deposit} />
                     </div>
                   </div>
                 </div>
@@ -476,7 +514,9 @@ const Home = () => {
                       <input
                         type="text"
                         placeholder="0x124...5678"
-                        onChange={(e: any) => setActionReceiver(e.target.value)}
+                        onChange={(e: any) => {
+                          if (e.target.value) setActionReceiver(e.target.value);
+                        }}
                         onKeyDown={e => removeScroll(e)}
                         autoComplete="off"
                         ref={receiverRef}
@@ -492,14 +532,22 @@ const Home = () => {
                 </div>
                 <div>&nbsp;</div>
                 {withdrawAllowance?.lt(sharesAmount) ? (
-                  <ApproveShares amount={sharesAmount}/>
+                  <ApproveShares amount={sharesAmount} />
                 ) : (
                   <div
                     className="page-component__main__input__action-btn"
                     onClick={() =>
-                      nativeAsset
-                        ? RedeemSharesToNative(sharesAmount, actionReceiver)
-                        : RedeemShares(sharesAmount, actionReceiver)
+                      nativeAsset ? (
+                        <RedeemSharesToNative
+                          amount={sharesAmount._isBigNumber ? sharesAmount : BigNumber.from(0)}
+                          receiver={actionReceiver}
+                        />
+                      ) : (
+                        <RedeemShares
+                          amount={sharesAmount._isBigNumber ? sharesAmount : BigNumber.from(0)}
+                          receiver={actionReceiver}
+                        />
+                      )
                     }
                   >
                     Redeem

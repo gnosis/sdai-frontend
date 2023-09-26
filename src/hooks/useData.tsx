@@ -120,7 +120,7 @@ export const ApproveShares: React.FC<{amount:BigNumber}> =({amount}) =>{
       address: ERC4626_VAULT_ADDRESS,
       abi: ERC20Abi,
       functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, ethers.utils.formatUnits(amount)],
+      args: [VAULT_ROUTER_ADDRESS, amount],
     });
     const { write } = useContractWrite(config);
     return (
@@ -136,7 +136,6 @@ export const ApproveShares: React.FC<{amount:BigNumber}> =({amount}) =>{
 
 /** @notice Deposit assets of `MY_VAULT_TOKEN` into the ERC4626 vault */
 export const DepositNativeAssets: React.FC<{amount: BigNumber, receiver: string}> = ({amount, receiver}) =>{
-    console.log(amount, receiver)
     const { config } = usePrepareContractWrite({
       address: VAULT_ROUTER_ADDRESS,
       abi: RouterAbi,
@@ -150,18 +149,18 @@ export const DepositNativeAssets: React.FC<{amount: BigNumber, receiver: string}
       className="page-component__main__input__action-btn"
       onClick={() => write?.()}
     >
-      Deposita
+      Deposit
     </div>
     )
   };
 
 /** @notice Deposit assets of `MY_VAULT_TOKEN` into the ERC4626 vault */
-export const DepositAssets: React.FC<{amount: BigNumber, receiver: string}> = (amount, receiver) =>{
+export const DepositAssets: React.FC<{amount: BigNumber, receiver: string}> = ({amount, receiver}) =>{
     const { config } = usePrepareContractWrite({
       address: VAULT_ROUTER_ADDRESS,
       abi: RouterAbi,
       functionName: "deposit",
-      args: [amount, receiver],
+      args: [amount.toString(), receiver],
     });
     const { write } = useContractWrite(config);
     return (
@@ -176,26 +175,43 @@ export const DepositAssets: React.FC<{amount: BigNumber, receiver: string}> = (a
 
 
 /** @notice Redeem shares */
-export const RedeemShares = (amount: BigNumber, receiver: string) => {
-  const { config } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "redeem",
-    args: [amount, receiver],
-  });
-  useContractWrite(config);
-};
+export const RedeemShares: React.FC<{amount: BigNumber, receiver: string}> = ({amount, receiver}) =>{
+    const { config } = usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: RouterAbi,
+      functionName: "redeem",
+      args: [amount.toString(), receiver],
+    });
+    const { write } = useContractWrite(config);
+    return (
+      <div
+      className="page-component__main__input__action-btn"
+      onClick={() => write?.()}
+    >
+      Redeem
+    </div>
+    )
+  };
 
-/** @notice Redeem shares */
-export const RedeemSharesToNative = (amount: BigNumber, receiver: string) => {
-  const { config } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "redeemXDAI",
-    args: [amount, receiver],
-  });
-  useContractWrite(config);
-};
+
+  /** @notice Redeem shares */
+export const RedeemSharesToNative: React.FC<{amount: BigNumber, receiver: string}> = ({amount, receiver}) =>{
+    const { config } = usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: RouterAbi,
+      functionName: "redeemXDAI",
+      args: [amount.toString(), receiver],
+    });
+    const { write } = useContractWrite(config);
+    return (
+      <div
+      className="page-component__main__input__action-btn"
+      onClick={() => write?.()}
+    >
+      Redeem
+    </div>
+    )
+  };
 
 /** @notice Convert shares */
 export const useConvertToAssets = (shares: BigNumber) => {
