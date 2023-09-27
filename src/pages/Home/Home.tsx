@@ -3,19 +3,15 @@ import React, { useState, useEffect, useRef, KeyboardEvent, useCallback } from "
 // Ethers
 import { ethers, BigNumber } from "ethers";
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
-import {
-  useAccount,
-  usePublicClient,
-} from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 
 import {
   RedeemSharesToNative,
   RedeemShares,
   ApproveShares,
   ApproveAssets,
-  useConvertToAssets,
-  useConvertToShares,
   DepositAssets,
+  NoReceiver,
   DepositNativeAssets,
   useVaultAPY,
   useTokenAllowance,
@@ -38,6 +34,8 @@ import ERC4626Abi from "../../abis/MyVaultTokenERC4626.json";
 import RouterAbi from "../../abis/VaultRouter.json";
 import { parseEther } from "viem";
 import Input from "../../components/Input/Input";
+import { createImmediatelyInvokedFunctionExpression } from "typescript";
+import { isDisabled } from "@testing-library/user-event/dist/utils";
 
 // Addresses
 const VAULT_ROUTER_ADDRESS = "0x0EA5928162b0F74BAEf31c00A04A4cEC5Fe9f4b2";
@@ -45,7 +43,7 @@ const BRIDGE_RECEIVER = "0x071bf5695afeda65c405794c6574ae63ca8b73c3";
 const RESERVE_TOKEN_ADDRESS = "0x18c8a7ec7897177E4529065a7E7B0878358B3BfF";
 const ERC4626_VAULT_ADDRESS = "0x20e5eB701E8d711D419D444814308f8c2243461F";
 
-const Home = () => {
+export const Home = () => {
   // web3-react -----------
   // ------------ Refs -------------
 
@@ -54,8 +52,6 @@ const Home = () => {
 
   /** @notice Deposit/Withdrawal amount input */
   const amountRef = useRef<HTMLInputElement>(null);
-
-  const amountConvertRef = useRef<HTMLInputElement>(null);
 
   /** @notice Deposit/Withdrawal address input */
   const receiverRef = useRef<HTMLInputElement>(null);
@@ -98,13 +94,13 @@ const Home = () => {
   // User Info
 
   /** @notice ETH balance of signer */
-  const [XDAIBalance, setXDAIBalance] = useState<string>();
+  const [XDAIBalance, setXDAIBalance] = useState<BigNumber>();
 
   /** @notice Asset balance of signer */
-  const [assetBalance, setAssetBalance] = useState<string>();
+  const [assetBalance, setAssetBalance] = useState<BigNumber>();
 
   /** @notice Share balance of signer */
-  const [sharesBalance, setSharesBalance] = useState<string>();
+  const [sharesBalance, setSharesBalance] = useState<BigNumber>();
 
   // Vault info
 
@@ -123,11 +119,6 @@ const Home = () => {
       setActionReceiver(address);
     }
   };
-
-  //  useConvertToShares(depositAmount);
-
-  // useConvertToAssets(sharesAmount);
-  //assetBalance = useUserBalance(address);
 
   // User asset balance
   useUserBalanceToken(RESERVE_TOKEN_ADDRESS, address);
@@ -166,21 +157,20 @@ const Home = () => {
     // Refresh inputs on every modal swap
     setDepositAmount(ethers.utils.parseUnits("0"));
     setSharesAmount(ethers.utils.parseUnits("0"));
-    setActionReceiver("");
+    setShouldUpdate(true);
 
     if (amountRef.current) amountRef.current.value = "";
     if (receiverRef.current) receiverRef.current.value = "";
-    if (amountConvertRef.current) amountConvertRef.current.value = "";
   };
 
   /** @notice Swap between xdai/wxdai asset */
   const swapAsset = () => {
     setNativeAsset(() => !nativeAsset);
-    setActionReceiver("");
-
-    //if (amountRef.current)amountRef.current.value = "";
+    setDepositAmount(ethers.utils.parseUnits("0"));
+    setSharesAmount(ethers.utils.parseUnits("0"));
+    setShouldUpdate(true);
+    if (amountRef.current) amountRef.current.value = "";
     if (receiverRef.current) receiverRef.current.value = "";
-    if (amountConvertRef.current) amountConvertRef.current.value = "";
   };
 
   /** @notice Escape from connect modal */
@@ -191,18 +181,16 @@ const Home = () => {
   });
 
   useEffect(() => {
-    if (address && address != currentUser){
+    if (address && address != currentUser) {
       setCurrentUser(address);
       setShouldUpdate(true);
-      swapModal();
     }
-    if (client.key != currentChain)
-      setCurrentChain(client.key);
+    if (client.key != currentChain) setCurrentChain(client.key);
+    setShouldUpdate(true);
+    if (!isConnecting) {
       setShouldUpdate(true);
-  },[
-    address,
-    client.key
-  ]);
+    }
+  }, [address, client.key]);
 
   const newTotalSupply = useTotalSupply();
   const newDepositAmount = useTotalReserves();
@@ -213,25 +201,18 @@ const Home = () => {
   const initialDepositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
   const initialWithdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
   useEffect(() => {
-    if (shouldUpdate || isConnecting){
-    setTotalShares(newTotalSupply);
-    setTotalAssets(newDepositAmount);
-    setVaultAPY(newVaultAPY);
-    setXDAIBalance(initialXDAIBalance);
-    setAssetBalance(initialAssetBalance);
-    setSharesBalance(initialSharesBalance);
-    setDepositAllowance(initialDepositAllowance);
-    setWithdrawAllowance(initialWithdrawAllowance);
-    setShouldUpdate(false);
+    if (shouldUpdate) {
+      setTotalShares(newTotalSupply);
+      setTotalAssets(newDepositAmount);
+      setVaultAPY(newVaultAPY);
+      setXDAIBalance(initialXDAIBalance);
+      setAssetBalance(initialAssetBalance);
+      setSharesBalance(initialSharesBalance);
+      setDepositAllowance(initialDepositAllowance);
+      setWithdrawAllowance(initialWithdrawAllowance);
+      setShouldUpdate(false);
     }
-  }, [
-    shouldUpdate,
-    XDAIBalance,
-    sharesBalance,
-    assetBalance,
-    depositAllowance,
-    withdrawAllowance,
-  ]);
+  }, [shouldUpdate, XDAIBalance, sharesBalance, assetBalance, depositAllowance, withdrawAllowance]);
 
   return (
     <div className="page-home">
@@ -353,13 +334,17 @@ const Home = () => {
                         onClick={() => {
                           if (!nativeAsset) {
                             if (amountRef.current && assetBalance) {
-                              amountRef.current.value = assetBalance;
-                              setDepositAmount(ethers.utils.parseUnits(assetBalance));
+                              amountRef.current.value = assetBalance.toString();
+                              setShouldUpdate(true);
+                              setDepositAmount(assetBalance);
                             }
                           } else {
                             if (amountRef.current && XDAIBalance) {
-                              amountRef.current.value = XDAIBalance;
-                              setDepositAmount(ethers.utils.parseUnits(XDAIBalance).sub("10000000000000000"));
+                              amountRef.current.value = XDAIBalance.toString();
+                              setShouldUpdate(true);
+                              setDepositAmount(
+                                XDAIBalance.sub("10000000000000000"),
+                              );
                               // ConvertToShares(ethers.utils.parseUnits(XDAIBalance));
                             }
                           }
@@ -407,18 +392,37 @@ const Home = () => {
                 </div>
                 <div>&nbsp;</div>
                 <div className="page-component__main__input__btns">
-                  {!nativeAsset && depositAllowance?.lt(depositAmount) ? (
-                    <ApproveAssets amount={depositAmount} />
-                  ) : nativeAsset ? (
-                    <DepositNativeAssets
-                      amount={depositAmount._isBigNumber ? depositAmount : BigNumber.from(0)}
-                      receiver={actionReceiver}
-                    />
+                  {actionReceiver.length === 42 ? (
+                    !nativeAsset &&
+                    (depositAllowance?.isZero() || depositAllowance?.lt(depositAmount)) ? (
+                      <ApproveAssets
+                        amount={depositAmount}
+                        setDepositAllowance={setDepositAllowance}
+                      />
+                    ) : nativeAsset ? (
+                      <DepositNativeAssets
+                        disabled={
+                          actionReceiver.length === 42 && depositAmount.gt(0) ? false : true
+                        }
+                        amount={depositAmount}
+                        receiver={actionReceiver}
+                        currentBalance={XDAIBalance}
+                        setXDAIBalance={setXDAIBalance}
+                        
+                      />
+                    ) : (
+                      <DepositAssets
+                        disabled={
+                          actionReceiver.length === 42 && depositAmount.gt(0) ? false : true
+                        }
+                        amount={depositAmount._isBigNumber ? depositAmount : BigNumber.from(0)}
+                        receiver={actionReceiver}
+                        currentBalance={XDAIBalance}
+                        setAssetBalance={setAssetBalance}
+                      />
+                    )
                   ) : (
-                    <DepositAssets
-                      amount={depositAmount._isBigNumber ? depositAmount : BigNumber.from(0)}
-                      receiver={actionReceiver}
-                    />
+                    <NoReceiver />
                   )}
                 </div>
               </div>
@@ -485,8 +489,8 @@ const Home = () => {
                         className="page-component__main__input__max-btn"
                         onClick={() => {
                           if (amountRef.current && sharesBalance) {
-                            amountRef.current.value = sharesBalance;
-                            setSharesAmount(ethers.utils.parseUnits(sharesBalance));
+                            amountRef.current.value = sharesBalance.toString();
+                            setSharesAmount(sharesBalance);
                           }
                         }}
                       >
@@ -531,21 +535,31 @@ const Home = () => {
                   </div>
                 </div>
                 <div>&nbsp;</div>
-                {withdrawAllowance?.lt(sharesAmount) ? (
-                  <ApproveShares amount={sharesAmount} />
+                {withdrawAllowance?.lt(sharesAmount) || withdrawAllowance?.isZero() ? (
+                  <ApproveShares amount={sharesAmount}   setWithdrawAllowance={setWithdrawAllowance}/>
                 ) : (
                   <div
                     className="page-component__main__input__action-btn"
                     onClick={() =>
                       nativeAsset ? (
                         <RedeemSharesToNative
+                          disabled={
+                            actionReceiver.length === 42 && sharesAmount.gt(0) ? false : true
+                          }
                           amount={sharesAmount._isBigNumber ? sharesAmount : BigNumber.from(0)}
                           receiver={actionReceiver}
+                          setSharesBalance={setSharesBalance}
+                          currentBalance={sharesBalance}
                         />
                       ) : (
                         <RedeemShares
+                          disabled={
+                            actionReceiver.length === 42 && sharesAmount.gt(0) ? false : true
+                          }
                           amount={sharesAmount._isBigNumber ? sharesAmount : BigNumber.from(0)}
                           receiver={actionReceiver}
+                          setSharesBalance={setSharesBalance}
+                          currentBalance={sharesBalance}
                         />
                       )
                     }
