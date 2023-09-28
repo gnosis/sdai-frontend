@@ -6,6 +6,9 @@
   gap: var(--gap-large);
 }
 
+.full-width{
+  width: 100%;
+}
 /**
  *  HEADER 
  */
@@ -228,6 +231,23 @@
 .page-component__main__input__action-btn:hover {
   opacity:0.9;
   cursor: pointer;
+}
+
+.page-component__main__input__action-tx{
+  margin: auto;
+  display: flex;
+  background-color: #333;
+  border: 0px;
+  color: var(--cygwhite);
+  box-sizing: border-box;
+  padding: var(--padding-medium);
+  font-size: 18px;
+  margin-top: 1.5rem;
+  text-decoration: none;
+  align-items: end;
+  border-radius: var(--border-radius-medium);
+  justify-content: center;
+  width: 100%;
 }
 
 

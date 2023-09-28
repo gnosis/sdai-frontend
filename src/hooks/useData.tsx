@@ -1,18 +1,18 @@
-import { useCallback } from "react";
-import * as React from "react";
+import React, { useEffect } from "react";
 import { ethers, BigNumber } from "ethers";
 import {
   usePrepareContractWrite,
   useContractWrite,
   useBalance,
-  useAccount,
   useContractRead,
+  erc4626ABI,
+  useWaitForTransaction,
+  useAccount,
 } from "wagmi";
 import { useDebounce } from "usehooks-ts";
 import ERC20Abi from "../abis/MyVaultTokenERC20.json";
 import ERC4626Abi from "../abis/MyVaultTokenERC4626.json";
 import RouterAbi from "../abis/VaultRouter.json";
-import { Home } from "../pages/Home/Home";
 
 // Addresses
 const VAULT_ROUTER_ADDRESS = "0x0EA5928162b0F74BAEf31c00A04A4cEC5Fe9f4b2";
@@ -20,12 +20,10 @@ const RESERVE_TOKEN_ADDRESS = "0x18c8a7ec7897177E4529065a7E7B0878358B3BfF";
 const ERC4626_VAULT_ADDRESS = "0x20e5eB701E8d711D419D444814308f8c2243461F";
 
 export const useTotalSupply = () => {
-  const debounced = useDebounce("totalSupply", 10000);
   const res = useContractRead({
     address: ERC4626_VAULT_ADDRESS,
     abi: ERC4626Abi,
     functionName: "totalSupply",
-    enabled: Boolean(debounced),
   }).data;
   if (!res) {
     return "-";
@@ -81,7 +79,7 @@ export const useUserBalance = (address: `0x${string}` | undefined) => {
   if (!res) {
     return BigNumber.from(0);
   }
-  return BigNumber.from(res.value)
+  return BigNumber.from(res.value);
 };
 
 /** @notice user token Balance */
@@ -93,7 +91,21 @@ export const useUserBalanceToken = (token: `0x${string}`, address: `0x${string}`
   if (!res) {
     return BigNumber.from(0);
   }
-  return BigNumber.from(res.value)
+  return BigNumber.from(res.value);
+};
+
+/** @notice user token Balance */
+export const useUserReservesBalance = (address: `0x${string}` | undefined) => {
+  const res = useContractRead({
+    address: ERC4626_VAULT_ADDRESS,
+    abi: erc4626ABI,
+    functionName: "maxWithdraw",
+    args: [address ? address : "0x"],
+  }).data;
+  if (!res) {
+    return BigNumber.from(0);
+  }
+  return BigNumber.from(res);
 };
 
 /** @notice Approve assets before deposit */
@@ -107,13 +119,19 @@ export const ApproveAssets: React.FC<{
     functionName: "approve",
     args: [VAULT_ROUTER_ADDRESS, amount.toBigInt()],
   });
-  const { write, isSuccess } = useContractWrite(config);
+  const { write, isSuccess, isError } = useContractWrite(config);
+  console.log(amount.toString(), isSuccess, isError);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess) setDepositAllowance(amount);
-  }, [isSuccess]);
+  }, [amount, isSuccess, setDepositAllowance]);
   return (
-    <div className="page-component__main__input__action-btn" onClick={() => write?.()}>
+    <div
+      className="page-component__main__input__action-btn"
+      onClick={() => {
+        write?.();
+      }}
+    >
       Approve
     </div>
   );
@@ -132,9 +150,9 @@ export const ApproveShares: React.FC<{
   });
   const { write, isSuccess } = useContractWrite(config);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess) setWithdrawAllowance(amount);
-  }, [isSuccess]);
+  }, [isSuccess, setWithdrawAllowance, amount]);
 
   return (
     <div className="page-component__main__input__action-btn" onClick={() => write?.()}>
@@ -148,9 +166,12 @@ export const DepositNativeAssets: React.FC<{
   disabled: boolean;
   amount: BigNumber;
   receiver: string;
-  setXDAIBalance:React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  currentBalance: BigNumber | undefined;
-}> = ({ disabled, amount, receiver, setXDAIBalance, currentBalance }) => {
+  setXDAIBalance: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+  setReservesBalance: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
+}> = ({ disabled, amount, receiver, setXDAIBalance, setReservesBalance }) => {
+  const { address } = useAccount();
+  const reservesBalance = useUserReservesBalance(address);
+  const XDAIBalance = useUserBalance(address);
   const { config } = usePrepareContractWrite({
     address: VAULT_ROUTER_ADDRESS,
     abi: RouterAbi,
@@ -158,19 +179,47 @@ export const DepositNativeAssets: React.FC<{
     args: [receiver],
     value: amount.toBigInt(),
   });
-  const { write, isSuccess } = useContractWrite(config);
-  React.useEffect(() => {
-    if (isSuccess && currentBalance) setXDAIBalance(currentBalance.add(amount));
-  }, [isSuccess]);
+  const { write, data } = useContractWrite(config);
+  const waitForTransaction = useWaitForTransaction({
+    confirmations: 1,
+    hash: data?.hash,
+  });
+  let runOnce = true;
+  useEffect(() => {
+    if (
+      runOnce &&
+      waitForTransaction &&
+      waitForTransaction.isSuccess &&
+      XDAIBalance &&
+      amount &&
+      reservesBalance
+    ) {
+      setXDAIBalance(XDAIBalance.sub(amount));
+      setReservesBalance(reservesBalance.add(amount));
+      console.log("great success!!");
+      runOnce = false;
+    }
+  }, [waitForTransaction]);
 
   return (
-    <div
-      className="page-component__main__input__action-btn"
-      onClick={() => {
-        if (!disabled) write?.();
-      }}
-    >
-      Deposit
+    <div className="full-width">
+      <div
+        className="page-component__main__input__action-btn"
+        onClick={() => {
+          if (!disabled) write?.();
+        }}
+      >
+        Deposit
+      </div>
+      {waitForTransaction.isSuccess ? (
+        <a className="page-component__main__input__action-tx"
+          href={
+            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
+          }
+        >
+          View on Explorer
+        </a>
+      ) : null}
     </div>
   );
 };
@@ -180,29 +229,51 @@ export const DepositAssets: React.FC<{
   disabled: boolean;
   amount: BigNumber;
   receiver: string;
-  setAssetBalance:React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  currentBalance: BigNumber | undefined;
-}> = ({ disabled, amount, receiver, setAssetBalance, currentBalance }) => {
+  updater:any;
+}> = ({ disabled, amount, receiver, updater }) => {
+  const { address } = useAccount();
   const { config } = usePrepareContractWrite({
     address: VAULT_ROUTER_ADDRESS,
     abi: RouterAbi,
     functionName: "deposit",
     args: [amount.toBigInt(), receiver],
   });
-  const { write, isSuccess } = useContractWrite(config);
+  const { write, data } = useContractWrite(config);
+  const waitForTransaction = useWaitForTransaction({
+    confirmations: 1,
+    hash: data?.hash,
+  });
+  const reservesBalance = useUserReservesBalance(address);
+  const assetBalance = useUserBalanceToken(RESERVE_TOKEN_ADDRESS, address);
 
-  React.useEffect(() => {
-    if (isSuccess && currentBalance) setAssetBalance(currentBalance.add(amount));
-  }, [isSuccess]);
+  let runOnce = true;
+  useEffect(() => {
+    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
+      updater()
+      console.log("great success!!");
+      runOnce = false;
+    }
+  }, [waitForTransaction]);
 
   return (
-    <div
-      className="page-component__main__input__action-btn"
-      onClick={() => {
-        if (!disabled) write?.();
-      }}
-    >
-      Deposit
+    <div className="full-width">
+      <div
+        className="page-component__main__input__action-btn"
+        onClick={() => {
+          if (!disabled) write?.();
+        }}
+      >
+        Deposit
+      </div>
+      {waitForTransaction.isSuccess ? (
+        <a className="page-component__main__input__action-tx"
+          href={
+            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
+          }
+        >
+          View on Explorer
+        </a>
+      ) : null}
     </div>
   );
 };
@@ -212,29 +283,45 @@ export const RedeemShares: React.FC<{
   disabled: boolean;
   amount: BigNumber;
   receiver: string;
-  setSharesBalance:React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  currentBalance: BigNumber | undefined;
-}> = ({ disabled, amount, receiver, setSharesBalance, currentBalance }) => {
+}> = ({ disabled, amount, receiver}) => {
   const { config } = usePrepareContractWrite({
     address: VAULT_ROUTER_ADDRESS,
     abi: RouterAbi,
     functionName: "redeem",
     args: [amount.toBigInt(), receiver],
   });
-  const { write, isSuccess } = useContractWrite(config);
+  const { write, data } = useContractWrite(config);
+  const waitForTransaction = useWaitForTransaction({
+    confirmations: 1,
+    hash: data?.hash,
+  });
 
-  React.useEffect(() => {
-    if (isSuccess && currentBalance) setSharesBalance(currentBalance.sub(amount));
-  }, [isSuccess]);
-
+  let runOnce = true;
+  useEffect(() => {
+    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
+      console.log("great success!!");
+      runOnce = false;
+    }
+  }, [waitForTransaction]);
   return (
-    <div
-      className="page-component__main__input__action-btn"
-      onClick={() => {
-        if (!disabled) write?.();
-      }}
-    >
+    <div className="full-width">
+      <div
+        className="page-component__main__input__action-btn"
+        onClick={() => {
+          if (!disabled) write?.();
+        }}
+      >
       Redeem
+      </div>
+      {waitForTransaction.isSuccess ? (
+        <a className="page-component__main__input__action-tx"
+          href={
+            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
+          }
+        >
+          View on Explorer
+        </a>
+      ) : null}
     </div>
   );
 };
@@ -244,29 +331,45 @@ export const RedeemSharesToNative: React.FC<{
   disabled: boolean;
   amount: BigNumber;
   receiver: string;
-  setSharesBalance:React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  currentBalance: BigNumber | undefined;
-}> = ({ disabled, amount, receiver, setSharesBalance, currentBalance }) => {
+}> = ({ disabled, amount, receiver }) => {
   const { config, isSuccess } = usePrepareContractWrite({
     address: VAULT_ROUTER_ADDRESS,
     abi: RouterAbi,
     functionName: "redeemXDAI",
     args: [amount.toBigInt(), receiver],
   });
-  const { write } = useContractWrite(config);
+  const { write, data } = useContractWrite(config);
+  const waitForTransaction = useWaitForTransaction({
+    confirmations: 1,
+    hash: data?.hash,
+  });
 
-  React.useEffect(() => {
-    if (isSuccess && currentBalance) setSharesBalance(currentBalance.sub(amount));
-  }, [isSuccess]);
-
+    let runOnce = true;
+  useEffect(() => {
+    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
+      console.log("great success!!");
+      runOnce = false;
+    }
+  }, [waitForTransaction]);
   return (
-    <div
-      className="page-component__main__input__action-btn"
-      onClick={() => {
-        if (!disabled) write?.();
-      }}
-    >
+    <div className="full-width">
+      <div
+        className="page-component__main__input__action-btn"
+        onClick={() => {
+          if (!disabled) write?.();
+        }}
+      >
       Redeem
+      </div>
+      {waitForTransaction.isSuccess ? (
+        <a className="page-component__main__input__action-tx"
+          href={
+            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
+          }
+        >
+          View on Explorer
+        </a>
+      ) : null}
     </div>
   );
 };
