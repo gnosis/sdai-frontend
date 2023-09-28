@@ -33,10 +33,9 @@ import wxdaiLogo from "../../assets/xdai.png";
 import ERC20Abi from "../../abis/MyVaultTokenERC20.json";
 import ERC4626Abi from "../../abis/MyVaultTokenERC4626.json";
 import RouterAbi from "../../abis/VaultRouter.json";
-import { parseEther } from "viem";
 import Input from "../../components/Input/Input";
-import { createImmediatelyInvokedFunctionExpression } from "typescript";
-import { isDisabled } from "@testing-library/user-event/dist/utils";
+import Card from "../../components/cards/card";
+import {formatWeiComma,formatWei,formatContractAddress} from "../../utils/utils"
 
 // Addresses
 const VAULT_ROUTER_ADDRESS = "0x0EA5928162b0F74BAEf31c00A04A4cEC5Fe9f4b2";
@@ -104,10 +103,10 @@ export const Home = () => {
   // Vault info
 
   /** @notice Total Assets held by the vault contract */
-  const [totalAssets, setTotalAssets] = useState<string>("-");
-  const [vaultAPY, setVaultAPY] = useState<string>("-");
+  const [totalAssets, setTotalAssets] = useState<BigNumber>();
+  const [vaultAPY, setVaultAPY] = useState<BigNumber>();
   /** @notice Total Shares minted by the vault contract */
-  const [totalShares, setTotalShares] = useState<string>("-");
+  const [totalShares, setTotalShares] = useState<BigNumber>();
 
   /** @notice quick account */
   const myAddress = (e: any) => {
@@ -127,27 +126,7 @@ export const Home = () => {
   // Share Allowance
   useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
 
-  // ------------ Constant functions -------------
 
-  /** @notice Format address to `0x1234...5678` */
-  const formatAddress = (address: string | null | undefined) => {
-    if (address) {
-      return address?.slice(0, 4) + "..." + address?.slice(-4);
-    }
-  };
-
-  const formatWeiComma = (number: BigNumber) => {
-    return ethers.utils.commify((+ethers.utils.formatUnits(number.toString())).toFixed(2));
-  };
-
-  const formatWei = (number: BigNumber) => {
-    return (+ethers.utils.formatUnits(number.toString())).toFixed(3);
-  };
-
-  /** @notice Format address to `0x1234...5678` */
-  const formatContractAddress = (address: string | null | undefined) => {
-    return address?.slice(0, 8) + "..." + address?.slice(-5);
-  };
 
   /** @notice remove the annoying scroll of numbers when press keypad */
   const removeScroll = (e: KeyboardEvent) => {
@@ -225,7 +204,7 @@ export const Home = () => {
     setDepositAllowance(b.iDepositAllowance);
     setWithdrawAllowance(b.iWithdrawAllowance);
     setReservesBalance(b.iReservesBalance);
-  }, [b, sharesBalance]);
+  }, []);
 
   return (
     <div className="page-home">
@@ -243,49 +222,9 @@ export const Home = () => {
       {!isDisconnected ? (
         <main className="page-component__main">
           <div className="page-component__cards">
-            <div className="page-component__cards-data">
-              <div className="page-component__main__input__btns">
-                <div className="page-component__cards-data__title">
-                  SHARES <div className="page-component__cards-data__separator"></div>
-                </div>
-              </div>
-              <div className="page-component__cards-data__body">
-                <div className="page-component__cards-data__row">
-                  <div className="page-component__cards-data__number">
-                    {sharesBalance ? formatWeiComma(sharesBalance) : "-"}
-                  </div>
-                  <div>sDAI</div>
-                </div>
-              </div>
-            </div>
-            <div className="page-component__cards-data">
-              <div className="page-component__main__input__btns">
-                <div className="page-component__cards-data__title">
-                  RESERVES<div className="page-component__cards-data__separator"></div>
-                </div>
-              </div>
-              <div className="page-component__cards-data__body">
-                <div className="page-component__cards-data__row">
-                  <div className="page-component__cards-data__number">
-                    {reservesBalance ? formatWeiComma(reservesBalance) : "-"}
-                  </div>
-                  <div>WXDAI</div>
-                </div>
-              </div>
-            </div>
-            <div className="page-component__cards-data">
-              <div className="page-component__main__input__btns">
-                <div className="page-component__cards-data__title">
-                  VAULT APY <div className="page-component__cards-data__separator"></div>
-                </div>
-              </div>
-              <div className="page-component__cards-data__body">
-                <div className="page-component__cards-data__row">
-                  <div className="page-component__cards-data__number">{vaultAPY}</div>
-                  <div>%</div>
-                </div>
-              </div>
-            </div>
+            <Card title="My Shares" value={sharesBalance?sharesBalance:BigNumber.from(0)} currency="sDAI"/>
+            <Card title="Current Value" value={reservesBalance?reservesBalance:BigNumber.from(0)} currency="xDAI"/>
+            <Card title="Vault APY" value={vaultAPY?vaultAPY.mul(100):BigNumber.from(0)} currency="%"/>
           </div>
           <div className="page-component__main__action-modal">
             {deposit ? (

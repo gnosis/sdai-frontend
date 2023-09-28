@@ -26,10 +26,9 @@ export const useTotalSupply = () => {
     functionName: "totalSupply",
   }).data;
   if (!res) {
-    return "-";
+    return BigNumber.from(0);
   }
-  const shares = ethers.utils.commify((+ethers.utils.formatUnits(res.toString())).toFixed(2));
-  return shares;
+  return BigNumber.from(res);
 };
 
 /** @notice total reserves */
@@ -40,9 +39,9 @@ export const useTotalReserves = () => {
     functionName: "totalAssets",
   }).data;
   if (!res) {
-    return "-";
+    return BigNumber.from(0);
   }
-  return ethers.utils.commify((+ethers.utils.formatUnits(res.toString())).toFixed(2));
+  return BigNumber.from(res);
 };
 
 /** @notice vault APY */
@@ -53,9 +52,9 @@ export const useVaultAPY = () => {
     functionName: "vaultAPY",
   }).data;
   if (!res) {
-    return "-";
+    return BigNumber.from(0);;
   }
-  return (+ethers.utils.formatUnits(res.toString(), 16)).toFixed(3);
+  return BigNumber.from(res);
 };
 
 export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
