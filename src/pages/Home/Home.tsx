@@ -51,7 +51,7 @@ export const Home = () => {
   // web3-react -----------
   // ------------ Refs -------------
 
-  const { address, isConnecting, isDisconnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const client = usePublicClient();
 
   /** @notice Deposit/Withdrawal amount input */
@@ -104,8 +104,6 @@ export const Home = () => {
   /** @notice Total Shares minted by the vault contract */
   const [totalShares, setTotalShares] = useState<BigInt>(ZERO);
 
-
-
   useEffect(() => {
     if (address && address !== currentUser) {
       setCurrentUser(address);
@@ -129,7 +127,6 @@ export const Home = () => {
     }
   });
 
- 
   const firstFetch = {
     totalShares: useTotalSupply(),
     totalAssets: useTotalReserves(),
@@ -141,9 +138,6 @@ export const Home = () => {
     depositAllowance: useTokenAllowance(RESERVE_TOKEN_ADDRESS, address),
     withdrawAllowance: useTokenAllowance(ERC4626_VAULT_ADDRESS, address),
   };
-
-
-
 
   const [vaultState, setVaultState] = useState<VaultState>(firstFetch);
 
@@ -160,7 +154,7 @@ export const Home = () => {
           </div>
         </div>
       </header>
-      {!isDisconnected ? (
+      {isConnected ? (
         <main className="page-component__main">
           <div className="page-component__cards">
             <Card
@@ -175,16 +169,12 @@ export const Home = () => {
             />
             <Card
               title="Vault APY"
-              value={vaultAPY ? (vaultAPY.valueOf() * BigInt(100)) : BigInt(0)}
+              value={vaultAPY ? vaultAPY.valueOf() * BigInt(100) : BigInt(0)}
               currency="%"
             />
           </div>
           <div className="page-component__main__action-modal">
-            <Form
-              currentUser={currentUser}
-              vaultState={vaultState}
-              setVaultState={setVaultState}
-            />
+            <Form currentUser={currentUser} vaultState={vaultState} setVaultState={setVaultState} />
           </div>
         </main>
       ) : (
