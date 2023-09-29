@@ -5,15 +5,14 @@ import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
 
 interface IInputProps {
   deposit: boolean;
-  shares: bigint;
-  assets: bigint;
+  amount: bigint;
 }
 
-const Input: React.FC<IInputProps> = ({ deposit, shares, assets }) => {
-  const shares_ = useConvertToShares(assets);
-  const assets_ = useConvertToAssets(shares);
+const Input: React.FC<IInputProps> = ({ deposit, amount }) => {
+  const shares = useConvertToShares(amount);
+  const assets = useConvertToAssets(amount);
 
-  const chosenValue = deposit ? shares_.data : assets_.data;
+  const chosenValue = deposit ? shares.data : assets.data;
   const value = (+ethers.formatUnits(BigInt(chosenValue ?? BigInt(0)))).toFixed(2);
 
   // const value = ethers.commify(chosenValue);

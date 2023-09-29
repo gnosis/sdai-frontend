@@ -31,7 +31,6 @@ export const Home = () => {
   /** @notice Opens connect button modal */
   const { close } = useWeb3Modal();
 
-  const [currentUser, setCurrentUser] = useState<`0x${string}`>(`0x`);
   const [currentChain, setCurrentChain] = useState<string>("");
 
   const vaultAPY = useVaultAPY();
@@ -39,11 +38,8 @@ export const Home = () => {
   const reservesBalance = useUserReservesBalance(address);
 
   useEffect(() => {
-    if (address && address !== currentUser) {
-      setCurrentUser(address);
-    }
     if (client.key !== currentChain) setCurrentChain(client.key);
-  }, [address, client.key, currentChain, currentUser]);
+  }, [address, client.key, currentChain]);
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
@@ -77,7 +73,7 @@ export const Home = () => {
             <Card title="Vault APY" value={vaultAPY.data ?? BigInt(0)} currency="%" />
           </div>
           <div className="page-component__main__action-modal">
-            <Form currentUser={currentUser} />
+            <Form />
           </div>
         </main>
       ) : (

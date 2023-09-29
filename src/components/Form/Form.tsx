@@ -1,6 +1,5 @@
 import React, { useState, useRef, KeyboardEvent, useMemo } from "react";
 import { ethers } from "ethers";
-import { formatWei, FormState } from "../../utils/utils";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
@@ -22,11 +21,19 @@ import { VaultAdapter } from "../../abis/VaultAdapter";
 // Hooks
 import { useTokenAllowance } from "../../hooks/useData";
 
-interface IFormProps {
-  currentUser: `0x${string}`;
+// Constants
+const GAS_PRICE_OFFSET = BigInt("10000000000000000");
+
+enum Actions {
+  DepositXDAI,
+  ApproveWXDAI,
+  DepositWXDAI,
+  ApproveSDAI,
+  RedeemXDAI,
+  withdrawWXDAI,
 }
 
-const Form: React.FC<IFormProps> = ({ currentUser }) => {
+const Form: React.FC = () => {
   const { address } = useAccount();
 
   /** @notice Switches between deposit and redeem modal */
@@ -40,32 +47,16 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
   const receiverRef = useRef<HTMLInputElement>(null);
 
   // Deposit
-
   /** @notice Sets asset deposit amount */
-  const [assetAmount, setAssetAmount] = useState<bigint>(ZERO);
+  const [amount, setAmount] = useState<bigint>(ZERO);
   /** @notice Sets the receiver address for deposits/withdrawals */
-  const [actionReceiver, setActionReceiver] = useState<`0x${string}`>(currentUser);
-
-  // Withdrawal
-  /** @notice Sets shares amount to redeem */
-  const [sharesAmount, setSharesAmount] = useState<bigint>(ZERO);
-
-  const [formState, setFormState] = useState<FormState>({
-    assetAmount: assetAmount,
-    sharesAmount: sharesAmount,
-    actionReceiver: actionReceiver,
-  });
+  const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
 
   // State
   const assetBalance = useBalance({ token: RESERVE_TOKEN_ADDRESS, address });
 
   /** @notice quick account */
-  const myAddress = (e: any) => {
-    if (currentUser) {
-      e.currentTarget.previousSibling.value = currentUser;
-      setActionReceiver(currentUser);
-    }
-  };
+  const myAddress = () => address && setReceiver(address);
 
   /** @notice Swap between deposit/redeem modal */
   const swapModal = () => {
@@ -91,79 +82,6 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
     if (receiverRef.current) receiverRef.current.value = "";
   };
 
-  const approveDeposit = useContractWrite(
-    usePrepareContractWrite({
-      address: RESERVE_TOKEN_ADDRESS,
-      abi: erc20ABI,
-      functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, formState.assetAmount],
-    }).config,
-  );
-
-  const depositXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "depositXDAI",
-      args: [formState.actionReceiver],
-      value: formState.assetAmount.valueOf(),
-    }).config,
-  );
-
-  const depositWXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "deposit",
-      args: [formState.assetAmount, formState.actionReceiver],
-    }).config,
-  );
-
-  const approveWithdraw = useContractWrite(
-    usePrepareContractWrite({
-      address: ERC4626_VAULT_ADDRESS,
-      abi: erc20ABI,
-      functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, formState.sharesAmount],
-    }).config,
-  );
-
-  const redeemXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "redeemXDAI",
-      args: [formState.sharesAmount, formState.actionReceiver],
-    }).config,
-  );
-
-  const redeemWXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "redeem",
-      args: [formState.sharesAmount, formState.actionReceiver],
-    }).config,
-  );
-
-  const withdrawXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "withdrawXDAI",
-      args: [formState.sharesAmount, formState.actionReceiver],
-    }).config,
-  );
-
-  const withdrawWXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "withdraw",
-      args: [formState.assetAmount, formState.actionReceiver],
-    }).config,
-  );
-
   // State
   const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
   const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
@@ -175,46 +93,116 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
       if (isNative) {
         return {
           name: "Deposit xDAI",
-          action: approveDeposit,
+          action: Actions.DepositXDAI,
         };
       }
 
-      if (assetAmount > (depositAllowance.data ?? BigInt(0))) {
+      if (amount > (depositAllowance.data ?? BigInt(0))) {
         return {
           name: "Approve WXDAI",
-          action: approveDeposit,
+          action: Actions.ApproveWXDAI,
         };
       }
 
       return {
         name: "Deposit WXDAI",
-        action: depositWXDAI,
-      };
-    }
-
-    if (sharesAmount > (withdrawAllowance.data ?? BigInt(0))) {
-      return {
-        name: "Approve sDAI",
-        action: approveWithdraw,
+        action: Actions.DepositWXDAI,
       };
     }
 
     if (isNative) {
       return {
         name: "Withdraw xDAI",
-        action: redeemXDAI,
+        action: Actions.RedeemXDAI,
+      };
+    }
+
+    if (amount > (withdrawAllowance.data ?? BigInt(0))) {
+      return {
+        name: "Approve sDAI",
+        action: Actions.ApproveSDAI,
       };
     }
 
     return {
       name: "Withdraw WXDAI",
-      action: redeemWXDAI,
+      action: Actions.withdrawWXDAI,
     };
   }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data]);
+
+  const approveWXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: RESERVE_TOKEN_ADDRESS,
+      abi: erc20ABI,
+      functionName: "approve",
+      args: [VAULT_ROUTER_ADDRESS, amount],
+      enabled: action.action === Actions.ApproveWXDAI,
+    }).config,
+  );
+
+  const depositXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: VaultAdapter,
+      functionName: "depositXDAI",
+      args: [receiver],
+      value: amount,
+      enabled: action.action === Actions.DepositXDAI,
+    }).config,
+  );
+
+  const depositWXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: VaultAdapter,
+      functionName: "deposit",
+      args: [amount, receiver],
+      enabled: action.action === Actions.DepositWXDAI,
+    }).config,
+  );
+
+  const approveSDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: ERC4626_VAULT_ADDRESS,
+      abi: erc20ABI,
+      functionName: "approve",
+      args: [VAULT_ROUTER_ADDRESS, amount],
+      enabled: action.action === Actions.ApproveSDAI,
+    }).config,
+  );
+
+  const redeemXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: VaultAdapter,
+      functionName: "redeemXDAI",
+      args: [amount, receiver],
+      enabled: action.action === Actions.RedeemXDAI,
+    }).config,
+  );
+
+  const withdrawWXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: VaultAdapter,
+      functionName: "withdraw",
+      args: [amount, receiver],
+      enabled: action.action === Actions.withdrawWXDAI,
+    }).config,
+  );
 
   if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
     return <p>Loading...</p>;
   }
+
+  const method = {
+    [Actions.DepositXDAI]: depositXDAI,
+    [Actions.ApproveWXDAI]: approveWXDAI,
+    [Actions.DepositWXDAI]: depositWXDAI,
+    [Actions.RedeemXDAI]: redeemXDAI,
+    [Actions.ApproveSDAI]: approveSDAI,
+    [Actions.withdrawWXDAI]: withdrawWXDAI,
+  }[action.action];
 
   return (
     <div className="page-component__main__form">
@@ -226,7 +214,6 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
             className="page-component__main__action-modal-display__item"
             onClick={() => swapModal()}
           >
-            {" "}
             Deposit
           </div>
         )}
@@ -237,7 +224,6 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
             className="page-component__main__action-modal-display__item"
             onClick={() => swapModal()}
           >
-            {" "}
             Redeem
           </div>
         )}
@@ -277,27 +263,18 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
               min="0"
               placeholder="0.0"
               onChange={(e: any) => {
-                if (e.target.value) setAssetAmount(ethers.parseUnits(e.target.value, 18));
+                if (e.target.value) setAmount(ethers.parseUnits(e.target.value, 18));
               }}
               onKeyDown={(event: KeyboardEvent) => removeScroll(event)}
               autoComplete="off"
-              ref={amountRef}
             />
             <div
               className="page-component__main__input__max-btn"
               onClick={() => {
                 if (!isNative) {
-                  if (amountRef.current && assetBalance.data) {
-                    amountRef.current.value = formatWei(assetBalance.data.value);
-
-                    setAssetAmount(assetBalance.data.value);
-                  }
+                  assetBalance.data && setAmount(assetBalance.data.value);
                 } else {
-                  if (amountRef.current && nativeBalance.data) {
-                    amountRef.current.value = formatWei(nativeBalance.data.value);
-
-                    setAssetAmount(nativeBalance.data.value - BigInt("10000000000000000"));
-                  }
+                  nativeBalance.data && setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
                 }
               }}
             >
@@ -312,7 +289,7 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
             alt={!isDeposit ? "WXDAI" : "sDAI"}
           />
           <div className="page-component__main__input">
-            <Input assets={assetAmount} shares={sharesAmount} deposit={isDeposit} />
+            <Input amount={amount} deposit={isDeposit} />
           </div>
         </div>
       </div>
@@ -326,16 +303,13 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
               type="text"
               placeholder="0x124...5678"
               onChange={(e: any) => {
-                if (e.target.value) setActionReceiver(e.target.value);
+                if (e.target.value) setReceiver(e.target.value);
               }}
               onKeyDown={e => removeScroll(e)}
               autoComplete="off"
               ref={receiverRef}
             />
-            <div
-              className="page-component__main__input__max-btn"
-              onClick={(e: any) => myAddress(e)}
-            >
+            <div className="page-component__main__input__max-btn" onClick={myAddress}>
               ME
             </div>
           </div>
@@ -343,13 +317,11 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
       </div>
       <div>&nbsp;</div>
       <div className="page-component__main__input__btns">
-        {formState ? (
-          <ActionButton
-            method={action.name}
-            mutationTrigger={action.action.write}
-            mutationData={action.action.data}
-          />
-        ) : null}
+        <ActionButton
+          method={action.name}
+          mutationTrigger={method.write}
+          mutationData={method.data}
+        />
       </div>
     </div>
   );
