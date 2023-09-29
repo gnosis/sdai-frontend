@@ -53,16 +53,6 @@ const Form: React.FC = () => {
   /** @notice quick account */
   const myAddress = () => address && setReceiver(address);
 
-  /** @notice Swap between deposit/redeem modal */
-  const swapModal = () => {
-    setIsDeposit(() => !isDeposit);
-  };
-
-  /** @notice Swap between xdai/wxdai asset */
-  const swapAsset = () => {
-    setNativeAsset(() => !isNative);
-  };
-
   /** @notice remove the annoying scroll of numbers when press keypad */
   const removeScroll = (e: KeyboardEvent) => {
     if (["Space", "ArrowUp", "ArrowDown"].indexOf(e.code) > -1) {
@@ -192,51 +182,29 @@ const Form: React.FC = () => {
     [Actions.withdrawWXDAI]: withdrawWXDAI,
   }[action.action];
 
+  const actionModalDisplay = (deposit: boolean) =>
+    `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
+
+  const actionModalSwitch = (native: boolean) =>
+    `page-component__main__action-modal-switch__asset${native === isNative ? "__action" : ""}`;
+
   return (
     <div className="page-component__main__form">
       <div className="page-component__main__action-modal-display">
-        {isDeposit ? (
-          <div className="page-component__main__action-modal-display__item__action"> Deposit </div>
-        ) : (
-          <div
-            className="page-component__main__action-modal-display__item"
-            onClick={() => swapModal()}
-          >
-            Deposit
-          </div>
-        )}
-        {!isDeposit ? (
-          <div className="page-component__main__action-modal-display__item__action"> Redeem </div>
-        ) : (
-          <div
-            className="page-component__main__action-modal-display__item"
-            onClick={() => swapModal()}
-          >
-            Redeem
-          </div>
-        )}
+        <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
+          Deposit
+        </div>
+        <div className={actionModalDisplay(false)} onClick={() => setIsDeposit(false)}>
+          Redeem
+        </div>
       </div>
       <div className="page-component__main__action-modal-switch">
-        {isNative ? (
-          <div className="page-component__main__action-modal-switch__asset__action">xDAI</div>
-        ) : (
-          <div
-            className="page-component__main__action-modal-switch__asset"
-            onClick={() => swapAsset()}
-          >
-            xDAI
-          </div>
-        )}
-        {isNative ? (
-          <div
-            className="page-component__main__action-modal-switch__asset"
-            onClick={() => swapAsset()}
-          >
-            WXDAI
-          </div>
-        ) : (
-          <div className="page-component__main__action-modal-switch__asset__action">WXDAI</div>
-        )}
+        <div className={actionModalSwitch(true)} onClick={() => setNativeAsset(true)}>
+          xDAI
+        </div>
+        <div className={actionModalSwitch(false)} onClick={() => setNativeAsset(false)}>
+          WXDAI
+        </div>
       </div>
       <div className="page-component__main__asset__margin">
         <div className="page-component__main__asset">
