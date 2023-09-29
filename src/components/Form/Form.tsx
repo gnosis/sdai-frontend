@@ -41,11 +41,6 @@ const Form: React.FC = () => {
   /** @notice Switches between xDAI and WXDAI */
   const [isNative, setNativeAsset] = useState<boolean>(true);
 
-  /** @notice Deposit/Withdrawal amount input */
-  const amountRef = useRef<HTMLInputElement>(null);
-  /** @notice Deposit/Withdrawal address input */
-  const receiverRef = useRef<HTMLInputElement>(null);
-
   // Deposit
   /** @notice Sets asset deposit amount */
   const [amount, setAmount] = useState<bigint>(ZERO);
@@ -61,13 +56,11 @@ const Form: React.FC = () => {
   /** @notice Swap between deposit/redeem modal */
   const swapModal = () => {
     setIsDeposit(() => !isDeposit);
-    clearRefs();
   };
 
   /** @notice Swap between xdai/wxdai asset */
   const swapAsset = () => {
     setNativeAsset(() => !isNative);
-    clearRefs();
   };
 
   /** @notice remove the annoying scroll of numbers when press keypad */
@@ -75,11 +68,6 @@ const Form: React.FC = () => {
     if (["Space", "ArrowUp", "ArrowDown"].indexOf(e.code) > -1) {
       e.preventDefault();
     }
-  };
-
-  const clearRefs = () => {
-    if (amountRef.current) amountRef.current.value = "";
-    if (receiverRef.current) receiverRef.current.value = "";
   };
 
   // State
@@ -307,7 +295,6 @@ const Form: React.FC = () => {
               }}
               onKeyDown={e => removeScroll(e)}
               autoComplete="off"
-              ref={receiverRef}
             />
             <div className="page-component__main__input__max-btn" onClick={myAddress}>
               ME
