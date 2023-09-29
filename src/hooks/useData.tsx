@@ -1,112 +1,55 @@
-import React, { useEffect } from "react";
-import { ethers } from "ethers";
-import {
-  usePrepareContractWrite,
-  useContractWrite,
-  useBalance,
-  useContractRead,
-  erc4626ABI,
-  useWaitForTransaction,
-  useAccount,
-} from "wagmi";
-import { useDebounce } from "usehooks-ts";
-import ERC20Abi from "../abis/MyVaultTokenERC20.json";
-import ERC4626Abi from "../abis/MyVaultTokenERC4626.json";
-import RouterAbi from "../abis/VaultAdapter.json";
-import "../constants";
-import { ZERO } from "../constants";
+import React from "react";
+import { useContractRead, erc4626ABI, erc20ABI } from "wagmi";
 
-// Addresses
-const VAULT_ROUTER_ADDRESS = "0x0EA5928162b0F74BAEf31c00A04A4cEC5Fe9f4b2";
-const RESERVE_TOKEN_ADDRESS = "0x18c8a7ec7897177E4529065a7E7B0878358B3BfF";
-const ERC4626_VAULT_ADDRESS = "0x20e5eB701E8d711D419D444814308f8c2243461F";
+// ABIs
+import { VaultAdapter } from "../abis/VaultAdapter";
+
+// Constants
+import { ERC4626_VAULT_ADDRESS, VAULT_ROUTER_ADDRESS } from "../constants";
 
 export const useTotalSupply = () => {
-  const res = useContractRead({
+  return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
-    abi: ERC4626Abi,
+    abi: erc4626ABI,
     functionName: "totalSupply",
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt((res).toString())
+  });
 };
 
 /** @notice total reserves */
 export const useTotalReserves = () => {
-  const res = useContractRead({
+  return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
-    abi: ERC4626Abi,
+    abi: erc4626ABI,
     functionName: "totalAssets",
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt((res).toString());
+  });
 };
 
 /** @notice vault APY */
 export const useVaultAPY = () => {
-  const res = useContractRead({
+  return useContractRead({
     address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
+    abi: VaultAdapter,
     functionName: "vaultAPY",
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt((res).toString());
+  });
 };
 
 export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
-  const res = useContractRead({
+  return useContractRead({
     address: token,
-    abi: ERC20Abi,
+    abi: erc20ABI,
     functionName: "allowance",
     args: [address ? address : "0x", VAULT_ROUTER_ADDRESS],
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt((res).toString());
-};
-
-/** @notice user native Balance */
-export const useUserBalance = (address: `0x${string}` | undefined) => {
-  const res = useBalance({
-    address: address,
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt(res.value);
-};
-
-/** @notice user token Balance */
-export const useUserBalanceToken = (token: `0x${string}`, address: `0x${string}` | undefined) => {
-  const res = useBalance({
-    address: address,
-    token: token,
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt(res.value);
+  });
 };
 
 /** @notice user token Balance */
 export const useUserReservesBalance = (address: `0x${string}` | undefined) => {
-  const res = useContractRead({
+  return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
     abi: erc4626ABI,
     functionName: "maxWithdraw",
     args: [address ? address : "0x"],
-  }).data;
-  if (!res) {
-    return ZERO;
-  }
-  return BigInt((res).toString());
+  });
 };
 
 export const NoReceiver = () => {
@@ -114,29 +57,21 @@ export const NoReceiver = () => {
 };
 
 /** @notice Convert shares */
-export const useConvertToAssets = (shares: BigInt) => {
-  const res = useContractRead({
+export const useConvertToAssets = (shares: bigint) => {
+  return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
-    abi: ERC4626Abi,
+    abi: erc4626ABI,
     functionName: "convertToAssets",
     args: [shares],
-  }).data;
-  if (!res) {
-    return "0";
-  }
-  return res.toString();
+  });
 };
 
 /** @notice Convert assets */
-export const useConvertToShares = (deposits: BigInt) => {
-  const res = useContractRead({
+export const useConvertToShares = (deposits: bigint) => {
+  return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
-    abi: ERC4626Abi,
+    abi: erc4626ABI,
     functionName: "convertToShares",
     args: [deposits],
-  }).data;
-  if (!res) {
-    return "0";
-  }
-  return res.toString();
+  });
 };
