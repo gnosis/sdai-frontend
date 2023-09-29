@@ -37,9 +37,6 @@ jobs:
 
       - name: Install
         run: |
-          rm -rf .cache
-          rm -rf build
-          npm config set cache-folder .node
           npm install
           pip install awscli --upgrade --user
       
