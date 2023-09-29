@@ -1,6 +1,6 @@
-import React, { useContext, useState, useEffect, useRef, KeyboardEvent } from "react";
+import React, { useState, useRef, KeyboardEvent, useMemo } from "react";
 import { ethers } from "ethers";
-import { formatWeiComma, formatWei, VaultState, FormState } from "../../utils/utils";
+import { formatWei, FormState } from "../../utils/utils";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
@@ -18,6 +18,9 @@ import {
 
 // ABIS
 import { VaultAdapter } from "../../abis/VaultAdapter";
+
+// Hooks
+import { useTokenAllowance } from "../../hooks/useData";
 
 interface IFormProps {
   currentUser: `0x${string}`;
@@ -161,65 +164,57 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
     }).config,
   );
 
-  const [method, setMethod] = useState<string>("Deposit");
-  const [mutationTrigger, setTrigger] = useState<() => void | undefined>();
-  const [mutationData, setData] = useState<any>();
+  // State
+  const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
+  const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
+  const nativeBalance = useBalance({ address });
 
-  function selectMyMethod(
-    isDeposit: boolean,
-    isNative: boolean,
-    form: FormState,
-    vault: VaultState,
-  ) {
-    // DEPOSITS
+  // Current action
+  const action = useMemo(() => {
     if (isDeposit) {
       if (isNative) {
-        setMethod("Deposit xDAI");
-        const { write, data } = depositXDAI;
-        setTrigger(write);
-        setData(data);
-      } else {
-        if (form.assetAmount > vault.depositAllowance) {
-          setMethod("Approve WXDAI");
-          const { write, data } = approveDeposit;
-          setTrigger(write);
-          setData(data);
-        } else {
-          setMethod("Deposit WXDAI");
-          const { write, data } = depositWXDAI;
-          setTrigger(write);
-          setData(data);
-        }
+        return {
+          name: "Deposit xDAI",
+          action: approveDeposit,
+        };
       }
-    }
-    // WITHDRAWALS
-    else {
-      if (form.sharesAmount > vault.withdrawAllowance) {
-        setMethod("Approve sDAI");
-        const { write, data } = approveWithdraw;
-        setTrigger(write);
-        setData(data);
-      } else {
-        if (isNative) {
-          setMethod("Withdraw xDAI");
-          const { write, data } = redeemXDAI;
-          setTrigger(write);
-          setData(data);
-        } else {
-          setMethod("Withdraw WXDAI");
-          const { write, data } = redeemWXDAI;
-          setTrigger(write);
-          setData(data);
-        }
-      }
-    }
-  }
 
-  /*
-  useEffect(() => {
-    selectMyMethod(isDeposit, isNative, formState, vaultState);
-  }, [isDeposit, isNative, formState, vaultState]);
-  */
+      if (assetAmount > (depositAllowance.data ?? BigInt(0))) {
+        return {
+          name: "Approve WXDAI",
+          action: approveDeposit,
+        };
+      }
+
+      return {
+        name: "Deposit WXDAI",
+        action: depositWXDAI,
+      };
+    }
+
+    if (sharesAmount > (withdrawAllowance.data ?? BigInt(0))) {
+      return {
+        name: "Approve sDAI",
+        action: approveWithdraw,
+      };
+    }
+
+    if (isNative) {
+      return {
+        name: "Withdraw xDAI",
+        action: redeemXDAI,
+      };
+    }
+
+    return {
+      name: "Withdraw WXDAI",
+      action: redeemWXDAI,
+    };
+  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data]);
+
+  if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="page-component__main__form">
@@ -291,21 +286,19 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
             <div
               className="page-component__main__input__max-btn"
               onClick={() => {
-                /*
                 if (!isNative) {
                   if (amountRef.current && assetBalance.data) {
-                    amountRef.current.value = formatWei(assetBalance.data);
+                    amountRef.current.value = formatWei(assetBalance.data.value);
 
-                    setAssetAmount(assetBalance);
+                    setAssetAmount(assetBalance.data.value);
                   }
                 } else {
-                  if (amountRef.current && vaultState.XDAIBalance) {
-                    amountRef.current.value = formatWei(vaultState.XDAIBalance);
+                  if (amountRef.current && nativeBalance.data) {
+                    amountRef.current.value = formatWei(nativeBalance.data.value);
 
-                    setAssetAmount(vaultState.XDAIBalance.valueOf() - BigInt("10000000000000000"));
+                    setAssetAmount(nativeBalance.data.value - BigInt("10000000000000000"));
                   }
                 }
-                */
               }}
             >
               MAX
@@ -352,9 +345,9 @@ const Form: React.FC<IFormProps> = ({ currentUser }) => {
       <div className="page-component__main__input__btns">
         {formState ? (
           <ActionButton
-            method={method}
-            mutationTrigger={mutationTrigger}
-            mutationData={mutationData}
+            method={action.name}
+            mutationTrigger={action.action.write}
+            mutationData={action.action.data}
           />
         ) : null}
       </div>
