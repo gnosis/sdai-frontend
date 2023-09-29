@@ -28,21 +28,21 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 18.17.1
 
       - name: Install
         run: |
-          npm install
+          yarn install
           pip install awscli --upgrade --user
       
       - name: Build Release App
         if: ( github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' )
-        run: npm run build
+        run: yarn run build
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
