@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 import {
   usePrepareContractWrite,
   useContractWrite,
@@ -12,7 +12,9 @@ import {
 import { useDebounce } from "usehooks-ts";
 import ERC20Abi from "../abis/MyVaultTokenERC20.json";
 import ERC4626Abi from "../abis/MyVaultTokenERC4626.json";
-import RouterAbi from "../abis/VaultRouter.json";
+import RouterAbi from "../abis/VaultAdapter.json";
+import "../constants";
+import { ZERO } from "../constants";
 
 // Addresses
 const VAULT_ROUTER_ADDRESS = "0x0EA5928162b0F74BAEf31c00A04A4cEC5Fe9f4b2";
@@ -26,9 +28,9 @@ export const useTotalSupply = () => {
     functionName: "totalSupply",
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res);
+  return BigInt((res).toString())
 };
 
 /** @notice total reserves */
@@ -39,9 +41,9 @@ export const useTotalReserves = () => {
     functionName: "totalAssets",
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res);
+  return BigInt((res).toString());
 };
 
 /** @notice vault APY */
@@ -52,9 +54,9 @@ export const useVaultAPY = () => {
     functionName: "vaultAPY",
   }).data;
   if (!res) {
-    return BigNumber.from(0);;
+    return ZERO;
   }
-  return BigNumber.from(res);
+  return BigInt((res).toString());
 };
 
 export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
@@ -62,12 +64,12 @@ export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` |
     address: token,
     abi: ERC20Abi,
     functionName: "allowance",
-    args: [address, VAULT_ROUTER_ADDRESS],
+    args: [address ? address : "0x", VAULT_ROUTER_ADDRESS],
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res);
+  return BigInt((res).toString());
 };
 
 /** @notice user native Balance */
@@ -76,9 +78,9 @@ export const useUserBalance = (address: `0x${string}` | undefined) => {
     address: address,
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res.value);
+  return BigInt(res.value);
 };
 
 /** @notice user token Balance */
@@ -88,9 +90,9 @@ export const useUserBalanceToken = (token: `0x${string}`, address: `0x${string}`
     token: token,
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res.value);
+  return BigInt(res.value);
 };
 
 /** @notice user token Balance */
@@ -102,275 +104,9 @@ export const useUserReservesBalance = (address: `0x${string}` | undefined) => {
     args: [address ? address : "0x"],
   }).data;
   if (!res) {
-    return BigNumber.from(0);
+    return ZERO;
   }
-  return BigNumber.from(res);
-};
-
-/** @notice Approve assets before deposit */
-export const ApproveAssets: React.FC<{
-  amount: BigNumber;
-  setDepositAllowance: React.Dispatch<React.SetStateAction<ethers.BigNumber | undefined>>;
-}> = ({ amount, setDepositAllowance }) => {
-  const { config } = usePrepareContractWrite({
-    address: RESERVE_TOKEN_ADDRESS,
-    abi: ERC20Abi,
-    functionName: "approve",
-    args: [VAULT_ROUTER_ADDRESS, amount.toBigInt()],
-  });
-  const { write, isSuccess, isError } = useContractWrite(config);
-  console.log(amount.toString(), isSuccess, isError);
-
-  useEffect(() => {
-    if (isSuccess) setDepositAllowance(amount);
-  }, [amount, isSuccess, setDepositAllowance]);
-  return (
-    <div
-      className="page-component__main__input__action-btn"
-      onClick={() => {
-        write?.();
-      }}
-    >
-      Approve
-    </div>
-  );
-};
-
-/** @notice Approve shares before withdrawal */
-export const ApproveShares: React.FC<{
-  amount: BigNumber;
-  setWithdrawAllowance: React.Dispatch<React.SetStateAction<ethers.BigNumber | undefined>>;
-}> = ({ amount, setWithdrawAllowance }) => {
-  const { config } = usePrepareContractWrite({
-    address: ERC4626_VAULT_ADDRESS,
-    abi: ERC20Abi,
-    functionName: "approve",
-    args: [VAULT_ROUTER_ADDRESS, amount.toBigInt()],
-  });
-  const { write, isSuccess } = useContractWrite(config);
-
-  useEffect(() => {
-    if (isSuccess) setWithdrawAllowance(amount);
-  }, [isSuccess, setWithdrawAllowance, amount]);
-
-  return (
-    <div className="page-component__main__input__action-btn" onClick={() => write?.()}>
-      Approve
-    </div>
-  );
-};
-
-/** @notice Deposit assets of `MY_VAULT_TOKEN` into the ERC4626 vault */
-export const DepositNativeAssets: React.FC<{
-  disabled: boolean;
-  amount: BigNumber;
-  receiver: string;
-  setXDAIBalance: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  setReservesBalance: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-}> = ({ disabled, amount, receiver, setXDAIBalance, setReservesBalance }) => {
-  const { address } = useAccount();
-  const reservesBalance = useUserReservesBalance(address);
-  const XDAIBalance = useUserBalance(address);
-  const { config } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "depositXDAI",
-    args: [receiver],
-    value: amount.toBigInt(),
-  });
-  const { write, data } = useContractWrite(config);
-  const waitForTransaction = useWaitForTransaction({
-    confirmations: 1,
-    hash: data?.hash,
-  });
-  let runOnce = true;
-  useEffect(() => {
-    if (
-      runOnce &&
-      waitForTransaction &&
-      waitForTransaction.isSuccess &&
-      XDAIBalance &&
-      amount &&
-      reservesBalance
-    ) {
-      setXDAIBalance(XDAIBalance.sub(amount));
-      setReservesBalance(reservesBalance.add(amount));
-      console.log("great success!!");
-      runOnce = false;
-    }
-  }, [waitForTransaction]);
-
-  return (
-    <div className="full-width">
-      <div
-        className="page-component__main__input__action-btn"
-        onClick={() => {
-          if (!disabled) write?.();
-        }}
-      >
-        Deposit
-      </div>
-      {waitForTransaction.isSuccess ? (
-        <a className="page-component__main__input__action-tx"
-          href={
-            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
-          }
-        >
-          View on Explorer
-        </a>
-      ) : null}
-    </div>
-  );
-};
-
-/** @notice Deposit assets of `MY_VAULT_TOKEN` into the ERC4626 vault */
-export const DepositAssets: React.FC<{
-  disabled: boolean;
-  amount: BigNumber;
-  receiver: string;
-  updater:any;
-}> = ({ disabled, amount, receiver, updater }) => {
-  const { address } = useAccount();
-  const { config } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "deposit",
-    args: [amount.toBigInt(), receiver],
-  });
-  const { write, data } = useContractWrite(config);
-  const waitForTransaction = useWaitForTransaction({
-    confirmations: 1,
-    hash: data?.hash,
-  });
-  const reservesBalance = useUserReservesBalance(address);
-  const assetBalance = useUserBalanceToken(RESERVE_TOKEN_ADDRESS, address);
-
-  let runOnce = true;
-  useEffect(() => {
-    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
-      updater()
-      console.log("great success!!");
-      runOnce = false;
-    }
-  }, [waitForTransaction]);
-
-  return (
-    <div className="full-width">
-      <div
-        className="page-component__main__input__action-btn"
-        onClick={() => {
-          if (!disabled) write?.();
-        }}
-      >
-        Deposit
-      </div>
-      {waitForTransaction.isSuccess ? (
-        <a className="page-component__main__input__action-tx"
-          href={
-            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
-          }
-        >
-          View on Explorer
-        </a>
-      ) : null}
-    </div>
-  );
-};
-
-/** @notice Redeem shares */
-export const RedeemShares: React.FC<{
-  disabled: boolean;
-  amount: BigNumber;
-  receiver: string;
-}> = ({ disabled, amount, receiver}) => {
-  const { config } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "redeem",
-    args: [amount.toBigInt(), receiver],
-  });
-  const { write, data } = useContractWrite(config);
-  const waitForTransaction = useWaitForTransaction({
-    confirmations: 1,
-    hash: data?.hash,
-  });
-
-  let runOnce = true;
-  useEffect(() => {
-    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
-      console.log("great success!!");
-      runOnce = false;
-    }
-  }, [waitForTransaction]);
-  return (
-    <div className="full-width">
-      <div
-        className="page-component__main__input__action-btn"
-        onClick={() => {
-          if (!disabled) write?.();
-        }}
-      >
-      Redeem
-      </div>
-      {waitForTransaction.isSuccess ? (
-        <a className="page-component__main__input__action-tx"
-          href={
-            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
-          }
-        >
-          View on Explorer
-        </a>
-      ) : null}
-    </div>
-  );
-};
-
-/** @notice Redeem shares */
-export const RedeemSharesToNative: React.FC<{
-  disabled: boolean;
-  amount: BigNumber;
-  receiver: string;
-}> = ({ disabled, amount, receiver }) => {
-  const { config, isSuccess } = usePrepareContractWrite({
-    address: VAULT_ROUTER_ADDRESS,
-    abi: RouterAbi,
-    functionName: "redeemXDAI",
-    args: [amount.toBigInt(), receiver],
-  });
-  const { write, data } = useContractWrite(config);
-  const waitForTransaction = useWaitForTransaction({
-    confirmations: 1,
-    hash: data?.hash,
-  });
-
-    let runOnce = true;
-  useEffect(() => {
-    if (runOnce && waitForTransaction && waitForTransaction.isSuccess && amount) {
-      console.log("great success!!");
-      runOnce = false;
-    }
-  }, [waitForTransaction]);
-  return (
-    <div className="full-width">
-      <div
-        className="page-component__main__input__action-btn"
-        onClick={() => {
-          if (!disabled) write?.();
-        }}
-      >
-      Redeem
-      </div>
-      {waitForTransaction.isSuccess ? (
-        <a className="page-component__main__input__action-tx"
-          href={
-            "https://gnosis-chiado.blockscout.com/tx/" + waitForTransaction.data?.transactionHash
-          }
-        >
-          View on Explorer
-        </a>
-      ) : null}
-    </div>
-  );
+  return BigInt((res).toString());
 };
 
 export const NoReceiver = () => {
@@ -378,12 +114,12 @@ export const NoReceiver = () => {
 };
 
 /** @notice Convert shares */
-export const useConvertToAssets = (shares: BigNumber) => {
+export const useConvertToAssets = (shares: BigInt) => {
   const res = useContractRead({
     address: ERC4626_VAULT_ADDRESS,
     abi: ERC4626Abi,
     functionName: "convertToAssets",
-    args: [shares.toBigInt()],
+    args: [shares],
   }).data;
   if (!res) {
     return "0";
@@ -392,12 +128,12 @@ export const useConvertToAssets = (shares: BigNumber) => {
 };
 
 /** @notice Convert assets */
-export const useConvertToShares = (deposits: BigNumber) => {
+export const useConvertToShares = (deposits: BigInt) => {
   const res = useContractRead({
     address: ERC4626_VAULT_ADDRESS,
     abi: ERC4626Abi,
     functionName: "convertToShares",
-    args: [deposits.toBigInt()],
+    args: [deposits],
   }).data;
   if (!res) {
     return "0";

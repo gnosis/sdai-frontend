@@ -1,12 +1,11 @@
 import React from "react";
-import "./card.css";
-import { BigNumber } from "ethers";
+import  ethers  from "ethers";
 import {formatWeiComma} from "../../utils/utils"
 
 
 interface ICardProps {
   title: string;
-  value: BigNumber;
+  value: BigInt;
   currency: string;
 }
 
@@ -22,7 +21,7 @@ const Card: React.FC<ICardProps> = ({ title, value, currency }) => {
       <div className="page-component__cards-data__body">
         <div className="page-component__cards-data__row">
           <div className="page-component__cards-data__number">
-            {formatWeiComma(value)}
+            {value?formatWeiComma(value):"-"}
           </div>
           <div>{currency}</div>
         </div>

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import Home from "./pages/Home/Home";
 import "./App.css";
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 import { EthereumClient, w3mConnectors, w3mProvider } from "@web3modal/ethereum";
 import { Web3Modal } from "@web3modal/react";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
