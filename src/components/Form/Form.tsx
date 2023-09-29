@@ -1,4 +1,4 @@
-import React, { useState, useRef, KeyboardEvent, useMemo } from "react";
+import React, { useState, KeyboardEvent, useMemo } from "react";
 import { ethers } from "ethers";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
