@@ -39,12 +39,12 @@ jobs:
         run: |
           yarn install
           pip install awscli --upgrade --user
-        env: 
-          CI: false # Set to True if no eslint errors
       
       - name: Build Release App
         if: ( github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' )
         run: yarn run build
+        env: 
+          CI: false # Set to True if no eslint errors
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
