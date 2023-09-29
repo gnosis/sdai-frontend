@@ -295,6 +295,7 @@ const Form: React.FC = () => {
               }}
               onKeyDown={e => removeScroll(e)}
               autoComplete="off"
+              value={receiver}
             />
             <div className="page-component__main__input__max-btn" onClick={myAddress}>
               ME
