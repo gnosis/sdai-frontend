@@ -367,6 +367,8 @@
     align-items: center;
     width: 100%;
     gap: var(--gap-large);
+    padding: 0;
+    padding-top: 16px;
   }
 
   .page-component__header__userinfo {
