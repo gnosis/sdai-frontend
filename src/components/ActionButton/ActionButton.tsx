@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TransactionReceipt } from "viem";
 import { useWaitForTransaction } from "wagmi";
 
@@ -8,7 +8,11 @@ interface IActionButtonProps {
   mutationTrigger?: () => void;
 
   // TODO: Import this type? Define it dynamically somehow?
-  onSettled?: (data: TransactionReceipt | undefined, error: Error | null) => void;
+  onSettled?: (
+    hash: `0x${string}`,
+    data: TransactionReceipt | undefined,
+    error: Error | null,
+  ) => void;
 }
 
 const ActionButton: React.FC<IActionButtonProps> = ({
@@ -17,11 +21,15 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   mutationData,
   onSettled,
 }) => {
-  useWaitForTransaction({
+  const { data, error } = useWaitForTransaction({
     confirmations: 1,
     hash: mutationData?.hash,
-    onSettled,
   });
+
+  useEffect(
+    () => mutationData?.hash && onSettled?.(mutationData.hash, data, error),
+    [onSettled, mutationData?.hash, data, error],
+  );
 
   return (
     // <div className="full-width">

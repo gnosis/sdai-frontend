@@ -1,5 +1,4 @@
-import React, { useState, KeyboardEvent, useMemo } from "react";
-import { ethers } from "ethers";
+import React, { useState, KeyboardEvent, useMemo, useCallback } from "react";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
@@ -23,7 +22,10 @@ import {
   useTokenAllowance,
   useTotalSupply,
   useUserReservesBalance,
+  useVaultAPY,
 } from "../../hooks/useData";
+import { TransactionReceipt, parseUnits } from "viem";
+import { formatUnits } from "ethers";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -38,6 +40,7 @@ enum Actions {
   WithdrawXDAI,
 }
 
+const handled: Record<string, boolean> = {};
 const Form: React.FC = () => {
   const { address } = useAccount();
 
@@ -196,13 +199,38 @@ const Form: React.FC = () => {
   // TODO: Move this up
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
+  const vaultAPY = useVaultAPY();
 
+  // TODO: Not all of these need to be refetched constantly
   const refetch = () => {
     totalShares.refetch();
     dripRate.refetch();
     lastClaimTimestamp.refetch();
     sharesBalance.refetch();
     reservesBalance.refetch();
+    depositAllowance.refetch();
+    withdrawAllowance.refetch();
+    nativeBalance.refetch();
+    vaultAPY.refetch();
+  };
+
+  const onSettled = (
+    hash: `0x${string}`,
+    data: TransactionReceipt | undefined,
+    error: Error | null,
+  ) => {
+    // TODO: Handle this in the UI
+    if (error) {
+      throw error;
+    }
+
+    if (handled[hash] || !data) {
+      return;
+    }
+
+    // Super hacky and not great
+    handled[hash] = true;
+    refetch();
   };
 
   if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
@@ -265,8 +293,8 @@ const Form: React.FC = () => {
               placeholder="0.00"
               step="0.01"
               autoComplete="off"
-              onChange={(e: any) => setAmount(ethers.parseUnits(e.target.value || "0", 18))}
-              value={amount ? +ethers.formatUnits(amount.toString()) : ""}
+              onChange={(e: any) => setAmount(parseUnits(e.target.value || "0", 18))}
+              value={amount ? +formatUnits(amount.toString()) : ""}
             />
             <div
               className="page-component__main__input__max-btn"
@@ -322,14 +350,7 @@ const Form: React.FC = () => {
           method={action.name}
           mutationTrigger={method.write}
           mutationData={method.data}
-          onSettled={(_, error) => {
-            // TODO: Handle this in the UI
-            if (error) {
-              throw error;
-            }
-
-            refetch();
-          }}
+          onSettled={onSettled}
         />
       </div>
     </div>
