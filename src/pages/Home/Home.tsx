@@ -33,8 +33,6 @@ export const Home = () => {
 
   // ------------ States -------------
 
-  const date = new Date();
-
   /** @notice Opens connect button modal */
   const { close } = useWeb3Modal();
 
@@ -48,7 +46,6 @@ export const Home = () => {
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
   const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
-  const [updateSharesValue, triggerUpdateSharesValue] = useState<boolean>(true);
 
   useEffect(() => {
     if (client.key !== currentChain) setCurrentChain(client.key);
@@ -61,36 +58,36 @@ export const Home = () => {
     }
   });
 
-  // Emulate shares Value in wxdai - update every 10 seconds
-  const calcSharesValue = useMemo(() => {
-    if (
-      lastClaimTimestamp.data &&
-      dripRate.data &&
-      sharesBalance.data &&
-      sharesBalance.data.value &&
-      reservesBalance.data &&
-      totalShares.data
-    ) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
-      const unclaimedValue = unclaimedTime * dripRate.data;
-      const sharesValue =
-        reservesBalance.data + (unclaimedValue * sharesBalance.data.value) / totalShares.data;
-      setSharesValue(sharesValue);
-    }
-  }, [
-    sharesBalance.data,
-    totalShares.data,
-    reservesBalance.data,
-    dripRate.data,
-    lastClaimTimestamp.data,
-    updateSharesValue,
-  ]);
-
   //update every 5 seconds
-  setTimeout(() => {
-    triggerUpdateSharesValue(!updateSharesValue);
-  }, 10000); 
+  useEffect(() => {
+    const update = () => {
+      if (
+        lastClaimTimestamp.data &&
+        dripRate.data &&
+        sharesBalance.data?.value &&
+        reservesBalance.data &&
+        totalShares.data
+      ) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
+        const unclaimedValue = unclaimedTime * dripRate.data;
+        const sharesValue =
+          reservesBalance.data + (unclaimedValue * sharesBalance.data.value) / totalShares.data;
+
+        setSharesValue(sharesValue);
+      }
+    };
+
+    update();
+    const interval = setInterval(update, 500);
+    return () => clearInterval(interval);
+  }, [
+    lastClaimTimestamp.data,
+    dripRate.data,
+    sharesBalance.data?.value,
+    reservesBalance.data,
+    totalShares.data,
+  ]);
 
   return (
     <div className="page-home">
