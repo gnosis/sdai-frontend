@@ -139,9 +139,6 @@
   width: 100%;
   text-align: center;
   transition: background-color 0.2s ease-in-out;
-}
-
-.page-component__main__action-modal-display__item:hover {
   cursor: pointer;
 }
 
@@ -184,7 +181,9 @@
   width: 100%;
   text-align: center;
   transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
 }
+
 .page-component__main__action-modal-switch__asset__action {
   display: flex;
   padding: 11px 9px 11px 8px;
