@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
-import { formatWei } from "../../utils/utils";
 import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
@@ -263,13 +262,11 @@ const Form: React.FC = () => {
             <input
               type="number"
               min="0"
-              placeholder="0.0"
-              onChange={(e: any) => {
-                if (e.target.value) setAmount(ethers.parseUnits(e.target.value, 18));
-              }}
-              onKeyDown={(event: KeyboardEvent) => removeScroll(event)}
+              placeholder="0.00"
+              step="0.01"
               autoComplete="off"
-              value={formatWei(amount)}
+              onChange={(e: any) => setAmount(ethers.parseUnits(e.target.value || "0", 18))}
+              value={amount ? +ethers.formatUnits(amount.toString()) : ""}
             />
             <div
               className="page-component__main__input__max-btn"
