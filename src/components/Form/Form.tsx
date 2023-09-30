@@ -322,11 +322,7 @@ const Form: React.FC = () => {
           method={action.name}
           mutationTrigger={method.write}
           mutationData={method.data}
-          onSettled={(data, error) => {
-            if (!data) {
-              return;
-            }
-
+          onSettled={(_, error) => {
             // TODO: Handle this in the UI
             if (error) {
               throw error;
