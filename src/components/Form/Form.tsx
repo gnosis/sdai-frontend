@@ -96,17 +96,17 @@ const Form: React.FC = () => {
       };
     }
 
-    if (isNative) {
-      return {
-        name: "Withdraw XDAI",
-        action: Actions.WithdrawXDAI,
-      };
-    }
-
     if (amount > (withdrawAllowance.data ?? BigInt(0))) {
       return {
         name: "Approve sDAI",
         action: Actions.ApproveSDAI,
+      };
+    }
+
+    if (isNative) {
+      return {
+        name: "Withdraw XDAI",
+        action: Actions.WithdrawXDAI,
       };
     }
 
