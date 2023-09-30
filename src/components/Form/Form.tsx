@@ -3,8 +3,8 @@ import { ethers } from "ethers";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
-
-import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
+import { formatWei } from "../../utils/utils";
+import { usePrepareContractWrite, useContractWrite,useContractRead, erc20ABI, useBalance, useAccount, erc4626ABI } from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 import wxdaiLogo from "../../assets/xdai.png";
@@ -19,7 +19,7 @@ import {
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import { useTokenAllowance } from "../../hooks/useData";
+import { useTokenAllowance,useUserReservesBalance } from "../../hooks/useData";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -30,7 +30,8 @@ enum Actions {
   DepositWXDAI,
   ApproveSDAI,
   RedeemXDAI,
-  withdrawWXDAI,
+  WithdrawWXDAI,
+  WithdrawXDAI,
 }
 
 const Form: React.FC = () => {
@@ -50,6 +51,8 @@ const Form: React.FC = () => {
   // State
   const assetBalance = useBalance({ token: RESERVE_TOKEN_ADDRESS, address });
 
+  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
+
   /** @notice quick account */
   const myAddress = () => address && setReceiver(address);
 
@@ -64,6 +67,7 @@ const Form: React.FC = () => {
   const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
   const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
   const nativeBalance = useBalance({ address });
+  const reservesBalance = useUserReservesBalance(address);
 
   // Current action
   const action = useMemo(() => {
@@ -90,8 +94,8 @@ const Form: React.FC = () => {
 
     if (isNative) {
       return {
-        name: "Withdraw xDAI",
-        action: Actions.RedeemXDAI,
+        name: "Withdraw XDAI",
+        action: Actions.WithdrawXDAI,
       };
     }
 
@@ -104,8 +108,13 @@ const Form: React.FC = () => {
 
     return {
       name: "Withdraw WXDAI",
-      action: Actions.withdrawWXDAI,
+      action: Actions.WithdrawWXDAI,
     };
+    /*
+    return {
+      name: "Redeem xDAI",
+      action: Actions.RedeemXDAI,
+    };*/
   }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data]);
 
   const approveWXDAI = useContractWrite(
@@ -165,7 +174,17 @@ const Form: React.FC = () => {
       abi: VaultAdapter,
       functionName: "withdraw",
       args: [amount, receiver],
-      enabled: action.action === Actions.withdrawWXDAI,
+      enabled: action.action === Actions.WithdrawWXDAI,
+    }).config,
+  );
+
+  const withdrawXDAI = useContractWrite(
+    usePrepareContractWrite({
+      address: VAULT_ROUTER_ADDRESS,
+      abi: VaultAdapter,
+      functionName: "withdrawXDAI",
+      args: [amount, receiver],
+      enabled: action.action === Actions.WithdrawXDAI,
     }).config,
   );
 
@@ -177,9 +196,10 @@ const Form: React.FC = () => {
     [Actions.DepositXDAI]: depositXDAI,
     [Actions.ApproveWXDAI]: approveWXDAI,
     [Actions.DepositWXDAI]: depositWXDAI,
-    [Actions.RedeemXDAI]: redeemXDAI,
     [Actions.ApproveSDAI]: approveSDAI,
-    [Actions.withdrawWXDAI]: withdrawWXDAI,
+    [Actions.RedeemXDAI]: redeemXDAI,
+    [Actions.WithdrawWXDAI]: withdrawWXDAI,
+    [Actions.WithdrawXDAI]: withdrawXDAI,
   }[action.action];
 
   const actionModalDisplay = (deposit: boolean) =>
@@ -191,10 +211,22 @@ const Form: React.FC = () => {
   return (
     <div className="page-component__main__form">
       <div className="page-component__main__action-modal-display">
-        <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
+        <div
+          className={actionModalDisplay(true)}
+          onClick={() => {
+            setIsDeposit(true);
+            setAmount(ZERO);
+          }}
+        >
           Deposit
         </div>
-        <div className={actionModalDisplay(false)} onClick={() => setIsDeposit(false)}>
+        <div
+          className={actionModalDisplay(false)}
+          onClick={() => {
+            setIsDeposit(false);
+            setAmount(ZERO);
+          }}
+        >
           Redeem
         </div>
       </div>
@@ -208,11 +240,7 @@ const Form: React.FC = () => {
       </div>
       <div className="page-component__main__asset__margin">
         <div className="page-component__main__asset">
-          <img
-            className="page-component__main__asset__img"
-            src={isDeposit ? wxdaiLogo : sDaiLogo}
-            alt={isDeposit ? "WXDAI" : "sDAI"}
-          />
+          <img className="page-component__main__asset__img" src={wxdaiLogo} alt={"WXDAI"} />
           <div className="page-component__main__input">
             <input
               type="number"
@@ -223,14 +251,19 @@ const Form: React.FC = () => {
               }}
               onKeyDown={(event: KeyboardEvent) => removeScroll(event)}
               autoComplete="off"
+              value={formatWei(amount)}
             />
             <div
               className="page-component__main__input__max-btn"
               onClick={() => {
+                if(isDeposit)
                 if (!isNative) {
                   assetBalance.data && setAmount(assetBalance.data.value);
                 } else {
                   nativeBalance.data && setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
+                }
+                else{
+                  reservesBalance.data && setAmount(reservesBalance.data);
                 }
               }}
             >
@@ -239,23 +272,20 @@ const Form: React.FC = () => {
           </div>
         </div>
         <div className="page-component__main__asset">
-          <img
-            className="page-component__main__asset__img"
-            src={!isDeposit ? wxdaiLogo : sDaiLogo}
-            alt={!isDeposit ? "WXDAI" : "sDAI"}
-          />
+          <img className="page-component__main__asset__img" src={sDaiLogo} alt="sDAI" />
           <div className="page-component__main__input">
-            <Input amount={amount} deposit={isDeposit} />
+            <Input amount={amount} />
           </div>
         </div>
       </div>
       <div className="page-component__main__asset__margin">
-        <div className="page-component__main__asset">
-          <div className="page-component__main__actions">
-            <p>Receiver</p>
+        <div className="page-component__main__receiver">
+          <div className="page-component__main__receiver__title">
+            <p>Receiving address</p>
           </div>
-          <div className="page-component__main__input">
+          <div className="page-component__main__input__receiver">
             <input
+              className="page-component__main__input__receiver_inputBox"
               type="text"
               placeholder="0x124...5678"
               onChange={(e: any) => {
@@ -265,7 +295,7 @@ const Form: React.FC = () => {
               autoComplete="off"
               value={receiver}
             />
-            <div className="page-component__main__input__max-btn" onClick={myAddress}>
+            <div className="page-component__main__input__receiver__btn" onClick={myAddress}>
               ME
             </div>
           </div>

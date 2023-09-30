@@ -28,9 +28,12 @@ function App() {
       <Web3Modal projectId={projectId} ethereumClient={ethereumClient} 
         themeVariables={{
           '--w3m-font-family': 'Roboto, sans-serif',
-          '--w3m-accent-color': '#f3af31',
-          '--w3m-overlay-background-color':'#123629'
-        }}/>
+          '--w3m-accent-color': '#FFC549',
+          '--w3m-accent-fill-color': '#1C352A',
+          '--w3m-overlay-background-color':'#3A6657',
+        }}
+        themeMode={"dark"}/>
+        
     </div>
   );
 }

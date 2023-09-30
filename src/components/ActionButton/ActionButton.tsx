@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef, KeyboardEvent } from "react";
 import ethers from "ethers";
-import { formatWeiComma, formatWei, VaultState, FormState } from "../../utils/utils";
+import { formatWei, VaultState, FormState } from "../../utils/utils";
 import { chains } from "../../constants";
 import {
   usePrepareContractWrite,
