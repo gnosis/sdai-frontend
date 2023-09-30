@@ -104,7 +104,7 @@ export const Home = () => {
         <main className="page-component__main">
           <div className="page-component__main__container">
             <div className="page-component__cards">
-              <Card title="Shares" value={sharesBalance.data?.value ?? BigInt(0)} currency="sDAI" />
+              <Card title="My Shares" value={sharesBalance.data?.value ?? BigInt(0)} currency="sDAI" />
               <Card
                 title="Value"
                 value={sharesValue ?? BigInt(0)}
