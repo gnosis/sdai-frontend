@@ -1,9 +1,9 @@
 // React
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 // Ethers
 
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
-import { useAccount, useBalance, usePublicClient } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 
 import {
   useUserReservesBalance,
@@ -29,14 +29,12 @@ export const Home = () => {
   // ------------ Refs -------------
 
   const { address, isConnected } = useAccount();
-  const client = usePublicClient();
 
   // ------------ States -------------
 
   /** @notice Opens connect button modal */
   const { close } = useWeb3Modal();
 
-  const [currentChain, setCurrentChain] = useState<string>("");
   //card-1
   const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
   //card-2
@@ -46,10 +44,6 @@ export const Home = () => {
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
   const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
-
-  useEffect(() => {
-    if (client.key !== currentChain) setCurrentChain(client.key);
-  }, [address, client.key, currentChain]);
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
