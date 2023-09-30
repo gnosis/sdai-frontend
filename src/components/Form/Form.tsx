@@ -6,7 +6,7 @@ import "../../constants";
 import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
-import wxdaiLogo from "../../assets/xdai.png";
+import wxdaiLogo from "../../assets/xdai.svg";
 import {
   ERC4626_VAULT_ADDRESS,
   RESERVE_TOKEN_ADDRESS,
