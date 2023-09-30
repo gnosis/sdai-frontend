@@ -105,7 +105,12 @@ export const Home = () => {
           <div className="page-component__main__container">
             <div className="page-component__cards">
               <Card title="Shares" value={sharesBalance.data?.value ?? BigInt(0)} currency="sDAI" />
-              <Card title="Value" value={sharesValue ?? BigInt(0)} currency="xDAI" />
+              <Card
+                title="Value"
+                value={sharesValue ?? BigInt(0)}
+                currency="xDAI"
+                smallDecimals={3}
+              />
               <Card
                 title="Vault APY"
                 value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
