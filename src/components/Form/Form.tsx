@@ -4,7 +4,7 @@ import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
 import { formatWei } from "../../utils/utils";
-import { usePrepareContractWrite, useContractWrite,useContractRead, erc20ABI, useBalance, useAccount, erc4626ABI } from "wagmi";
+import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 import wxdaiLogo from "../../assets/xdai.png";
@@ -19,7 +19,12 @@ import {
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import { useTokenAllowance,useUserReservesBalance } from "../../hooks/useData";
+import {
+  useReceiverData,
+  useTokenAllowance,
+  useTotalSupply,
+  useUserReservesBalance,
+} from "../../hooks/useData";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -115,7 +120,7 @@ const Form: React.FC = () => {
       name: "Redeem xDAI",
       action: Actions.RedeemXDAI,
     };*/
-  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data]);
+  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data, amount]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
@@ -188,6 +193,19 @@ const Form: React.FC = () => {
     }).config,
   );
 
+  // Store update
+  // TODO: Move this up
+  const totalShares = useTotalSupply();
+  const { dripRate, lastClaimTimestamp } = useReceiverData();
+
+  const refetch = () => {
+    totalShares.refetch();
+    dripRate.refetch();
+    lastClaimTimestamp.refetch();
+    sharesBalance.refetch();
+    reservesBalance.refetch();
+  };
+
   if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
     return <p>Loading...</p>;
   }
@@ -256,13 +274,13 @@ const Form: React.FC = () => {
             <div
               className="page-component__main__input__max-btn"
               onClick={() => {
-                if(isDeposit)
-                if (!isNative) {
-                  assetBalance.data && setAmount(assetBalance.data.value);
-                } else {
-                  nativeBalance.data && setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
-                }
-                else{
+                if (isDeposit)
+                  if (!isNative) {
+                    assetBalance.data && setAmount(assetBalance.data.value);
+                  } else {
+                    nativeBalance.data && setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
+                  }
+                else {
                   reservesBalance.data && setAmount(reservesBalance.data);
                 }
               }}
@@ -307,6 +325,18 @@ const Form: React.FC = () => {
           method={action.name}
           mutationTrigger={method.write}
           mutationData={method.data}
+          onSettled={(data, error) => {
+            if (!data) {
+              return;
+            }
+
+            // TODO: Handle this in the UI
+            if (error) {
+              throw error;
+            }
+
+            refetch();
+          }}
         />
       </div>
     </div>
