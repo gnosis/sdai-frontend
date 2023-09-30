@@ -26,6 +26,10 @@
   color:#F3F0EA;
 }
 
+.page-component__header__logo__text {
+  margin-left: 16px;
+}
+
 .page-component__header__logo__title {
   margin-top: 5px;
   font-weight: 500;
