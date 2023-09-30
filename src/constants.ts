@@ -37,4 +37,4 @@ export const BRIDGE_RECEIVER = "0x071bf5695afeda65c405794c6574ae63ca8b73c3";
 export const RESERVE_TOKEN_ADDRESS = "0x18c8a7ec7897177E4529065a7E7B0878358B3BfF";
 export const ERC4626_VAULT_ADDRESS = "0x20e5eB701E8d711D419D444814308f8c2243461F";
 
-export const paragraph_aboutSDai = `sDAI is similar to xDAI but with the added benefit of earning interest. \nYou can use it just like xDAI — own, transfer, and use it in the DeFi ecosystem. \nSwapping between sDAI and DAl incurs no costs and no slippage`
+export const paragraph_aboutSDai = `sDAI is similar to xDAI but with the added benefit of earning interest. \nYou can use it just like xDAI — own, transfer, and use it in the DeFi ecosystem. \nSwapping between sDAI and DAl incurs no costs and no slippage`;

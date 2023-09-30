@@ -36,21 +36,20 @@ export const useVaultAPY = () => {
 
 /** @notice vault APY */
 export const useReceiverData = () => {
-  const lastClaimTimestamp =  useContractRead({
+  const lastClaimTimestamp = useContractRead({
     address: BRIDGE_RECEIVER,
     abi: BridgeReceiver,
     functionName: "lastClaimTimestamp",
   });
 
-  const dripRate =  useContractRead({
+  const dripRate = useContractRead({
     address: BRIDGE_RECEIVER,
     abi: BridgeReceiver,
     functionName: "dripRate",
   });
 
-  return {dripRate, lastClaimTimestamp};
+  return { dripRate, lastClaimTimestamp };
 };
-
 
 export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
   return useContractRead({
