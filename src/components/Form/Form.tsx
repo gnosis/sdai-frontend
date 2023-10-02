@@ -19,7 +19,7 @@ import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 import { Token } from "../TokenSelector/TokenSelector";
-import { bigIntMin } from "../../utils/utils";
+import { bigIntMax, bigIntMin } from "../../utils/utils";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -122,7 +122,7 @@ const Form: React.FC = () => {
       abi: VaultAdapter,
       functionName: "depositXDAI",
       args: [receiver],
-      value: bigIntMin(amount, tokenInput?.max ? tokenInput?.max - GAS_PRICE_OFFSET : 0n),
+      value: bigIntMin(amount, bigIntMax((tokenInput?.max ?? 0n) - GAS_PRICE_OFFSET, 0n)),
       enabled: action.action === Actions.DepositXDAI,
     }).config,
   );
