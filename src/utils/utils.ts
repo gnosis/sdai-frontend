@@ -2,6 +2,8 @@ import { ethers } from "ethers";
 
 // ------------ Util functions -------------
 
+export const bigIntMin = (...args: bigint[]) => args.reduce((m, e) => (e < m ? e : m));
+
 /** @notice Format address to `0x1234...5678` */
 export const formatAddress = (address: string | null | undefined) => {
   if (address) {

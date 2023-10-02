@@ -8,22 +8,18 @@ import {
   ERC4626_VAULT_ADDRESS,
   RESERVE_TOKEN_ADDRESS,
   VAULT_ROUTER_ADDRESS,
-  ZERO,
 } from "../../constants";
 
 // ABIS
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import {
-  useReceiverData,
-  useTokenAllowance,
-  useTotalSupply,
-  useVaultAPY,
-} from "../../hooks/useData";
+import { useReceiverData, useTotalSupply, useVaultAPY } from "../../hooks/useData";
 import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
+import { Token } from "../TokenSelector/TokenSelector";
+import { bigIntMin } from "../../utils/utils";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -48,31 +44,24 @@ const Form: React.FC = () => {
       sharesBalance: state.sharesBalance,
       reservesBalance: state.reservesBalance,
       depositAllowance: state.depositAllowance,
-      withdrawalAllowance: state.withdrawalAllowance,
+      withdrawAllowance: state.withdrawAllowance,
     })),
   );
 
   if (!account) {
-    console.log({ account });
     throw new Error("rendered without account");
   }
 
-  // TODO: Improve this and specify defaults above
-  const { address } = account;
+  // Token input
+  const { address, depositAllowance, withdrawAllowance } = account;
+  const [tokenInput, setTokenInput] = useState<{ token: Token; balance: bigint; max: bigint }>();
+  const isNative = tokenInput?.token.name === "xDAI";
+  const amount = tokenInput?.balance ?? 0n;
 
-  /** @notice Switches between deposit and redeem modal */
+  // Toggles
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
-  /** @notice Switches between xDAI and WXDAI */
-  const [isNative, setNativeAsset] = useState<boolean>(true);
-
-  // Deposit
-  const [amount, setAmount] = useState<bigint>(ZERO);
   const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
   const myAddress = () => address && setReceiver(address);
-
-  // State
-  const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
-  const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
 
   // Current action
   const action = useMemo(() => {
@@ -84,7 +73,7 @@ const Form: React.FC = () => {
         };
       }
 
-      if (amount > (depositAllowance.data ?? BigInt(0))) {
+      if (amount > depositAllowance) {
         return {
           name: "Approve WXDAI",
           action: Actions.ApproveWXDAI,
@@ -97,7 +86,7 @@ const Form: React.FC = () => {
       };
     }
 
-    if (amount > (withdrawAllowance.data ?? BigInt(0))) {
+    if (amount > withdrawAllowance) {
       return {
         name: "Approve sDAI",
         action: Actions.ApproveSDAI,
@@ -115,12 +104,7 @@ const Form: React.FC = () => {
       name: "Withdraw WXDAI",
       action: Actions.WithdrawWXDAI,
     };
-    /*
-    return {
-      name: "Redeem xDAI",
-      action: Actions.RedeemXDAI,
-    };*/
-  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data, amount]);
+  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
@@ -138,7 +122,7 @@ const Form: React.FC = () => {
       abi: VaultAdapter,
       functionName: "depositXDAI",
       args: [receiver],
-      value: amount,
+      value: bigIntMin(amount, (tokenInput?.max ?? 0n) - GAS_PRICE_OFFSET),
       enabled: action.action === Actions.DepositXDAI,
     }).config,
   );
@@ -194,7 +178,7 @@ const Form: React.FC = () => {
   );
 
   // Store update
-  // TODO: Move this up
+  // TODO: Move this to a global store
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
   const vaultAPY = useVaultAPY();
@@ -202,12 +186,13 @@ const Form: React.FC = () => {
   // TODO: Not all of these need to be refetched constantly
   const refetch = () => {
     console.log("refetch?");
+
     totalShares.refetch();
     dripRate.refetch();
     lastClaimTimestamp.refetch();
-    depositAllowance.refetch();
-    withdrawAllowance.refetch();
     vaultAPY.refetch();
+
+    // Update account store
     useAccountStore.getState().fetch();
   };
 
@@ -250,91 +235,18 @@ const Form: React.FC = () => {
   return (
     <div className="page-component__main__form">
       <div className="page-component__main__action-modal-display">
-        <div
-          className={actionModalDisplay(true)}
-          onClick={() => {
-            setIsDeposit(true);
-            setAmount(ZERO);
-          }}
-        >
+        <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
           Deposit
         </div>
-        <div
-          className={actionModalDisplay(false)}
-          onClick={() => {
-            setIsDeposit(false);
-            setAmount(ZERO);
-          }}
-        >
+        <div className={actionModalDisplay(false)} onClick={() => setIsDeposit(false)}>
           Redeem
         </div>
       </div>
 
-      <TokenInput onBalanceChange={console.log} />
-
-      {/*
-      <div className="page-component__main__action-modal-switch">
-        <div
-          className={actionModalSwitch(true)}
-          onClick={() => setNativeAsset(true)}
-        >
-          xDAI
-        </div>
-        <div
-          className={actionModalSwitch(false)}
-          onClick={() => setNativeAsset(false)}
-        >
-          WXDAI
-        </div>
-      </div>
-      <div className="page-component__main__asset__margin">
-        <div className="page-component__main__asset">
-          <img
-            className="page-component__main__asset__img"
-            src={wxdaiLogo}
-            alt={"WXDAI"}
-          />
-          <div className="page-component__main__input">
-            <input
-              type="number"
-              min="0"
-              placeholder="0.00"
-              step="0.01"
-              autoComplete="off"
-              onChange={(e) => setAmount(parseUnits(e.target.value || "0", 18))}
-              value={amount ? +formatUnits(amount.toString()) : ""}
-            />
-            <div
-              className="page-component__main__input__max-btn"
-              onClick={() => {
-                if (isDeposit)
-                  if (!isNative) {
-                    assetBalance.data && setAmount(assetBalance.data.value);
-                  } else {
-                    nativeBalance.data &&
-                      setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
-                  }
-                else {
-                  reservesBalance.data && setAmount(reservesBalance.data);
-                }
-              }}
-            >
-              MAX
-            </div>
-          </div>
-        </div>
-        <div className="page-component__main__asset">
-          <img
-            className="page-component__main__asset__img"
-            src={sDaiLogo}
-            alt="sDAI"
-          />
-          <div className="page-component__main__input">
-            <Input amount={amount} />
-          </div>
-        </div>
-      </div>
-      */}
+      <TokenInput
+        onBalanceChange={(token, balance, max) => setTokenInput({ token, balance, max })}
+        deposit={isDeposit}
+      />
 
       <div className="page-component__main__asset__margin">
         <div className="page-component__main__receiver">

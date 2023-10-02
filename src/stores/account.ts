@@ -23,7 +23,7 @@ export interface AccountStoreLoaded extends AccountStore {
   reservesBalance: bigint;
   maxWithdrawBalance: bigint;
   depositAllowance: bigint;
-  withdrawalAllowance: bigint;
+  withdrawAllowance: bigint;
 }
 
 export interface AccountStoreLoading extends AccountStore {
@@ -57,7 +57,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       reservesBalance,
       maxWithdrawBalance,
       depositAllowance,
-      withdrawalAllowance,
+      withdrawAllowance,
     ] = await Promise.all([
       fetchBalance({ address }),
       fetchBalance({ address, token: RESERVE_TOKEN_ADDRESS }),
@@ -86,7 +86,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       reservesBalance,
       maxWithdrawBalance,
       depositAllowance,
-      withdrawalAllowance,
+      withdrawAllowance,
     });
   },
   watch: () => watchAccount(account => account.address && get().setAddress(account.address)),

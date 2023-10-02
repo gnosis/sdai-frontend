@@ -16,20 +16,17 @@ const formatBalance = (balance?: bigint) => {
 };
 
 export type TokenInputProps = {
-  onBalanceChange: (token: Token, balance: bigint) => void;
+  deposit: boolean;
+  onBalanceChange: (token: Token, balance: bigint, max: bigint) => void;
 };
 
-export const TokenInput: React.FC<TokenInputProps> = ({ onBalanceChange }) => {
+export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange }) => {
   const [token, setToken] = useState<Token>();
   const [balance, setBalance] = useState<bigint | undefined>();
   const account = useLoadedAccountStore(
     useShallow(state => ({
-      address: state.address,
       nativeBalance: state.nativeBalance,
-      sharesBalance: state.sharesBalance,
       reservesBalance: state.reservesBalance,
-      depositAllowance: state.depositAllowance,
-      withdrawalAllowance: state.withdrawalAllowance,
       wrappedBalance: state.wrappedBalance,
     })),
   );
@@ -39,20 +36,29 @@ export const TokenInput: React.FC<TokenInputProps> = ({ onBalanceChange }) => {
   }
 
   // Balances
-  const { nativeBalance, wrappedBalance } = account;
-  const tokenBalance = token?.name === "xDAI" ? nativeBalance : wrappedBalance;
-  const balanceValue = tokenBalance.value;
+  const { nativeBalance, wrappedBalance, reservesBalance } = account;
+  const tokenBalance = deposit
+    ? token?.name === "xDAI"
+      ? nativeBalance.value
+      : wrappedBalance.value
+    : reservesBalance;
 
   // Shares
   const shares = useConvertToShares(balance);
 
+  // Functions
   const setMax = () => {
-    if (!token || balanceValue === undefined) {
+    if (!token || tokenBalance === undefined) {
       return;
     }
 
-    onBalanceChange(token, balanceValue);
-    setBalance(balanceValue);
+    onBalanceChange(token, tokenBalance, tokenBalance);
+    setBalance(tokenBalance);
+  };
+
+  const selectToken = (token: Token) => {
+    setToken(token);
+    onBalanceChange(token, tokenBalance, tokenBalance);
   };
 
   return (
@@ -65,17 +71,17 @@ export const TokenInput: React.FC<TokenInputProps> = ({ onBalanceChange }) => {
             placeholder="0.00"
             step="0.01"
             autoComplete="off"
-            max={balanceValue ? formatUnits(balanceValue, 18) : ""}
+            max={tokenBalance ? formatUnits(tokenBalance, 18) : ""}
             value={balance ? formatUnits(balance, 18) : ""}
             onChange={e => setBalance(parseUnits(e.target.value, 18))}
           />
         </div>
-        <TokenSelector onSelected={setToken} />
+        <TokenSelector onSelected={selectToken} />
       </div>
       <div className="flex justify-between mt-2 items-center">
         <div className="text-[#999588] text-base font-semibold">{formatBalance(shares.data)}</div>
         <div className="text-xs text-[#7A776D]">
-          <span className="font-medium">Balance {formatBalance(balanceValue)}</span>
+          <span className="font-medium">Balance {formatBalance(tokenBalance)}</span>
           <button className="font-bold ml-2" onClick={setMax}>
             Max
           </button>
