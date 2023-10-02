@@ -5,11 +5,7 @@ import { VaultAdapter } from "../abis/VaultAdapter";
 import { BridgeReceiver } from "../abis/BridgeReceiver";
 
 // Constants
-import {
-  ERC4626_VAULT_ADDRESS,
-  VAULT_ROUTER_ADDRESS,
-  BRIDGE_RECEIVER,
-} from "../constants";
+import { ERC4626_VAULT_ADDRESS, VAULT_ROUTER_ADDRESS, BRIDGE_RECEIVER } from "../constants";
 
 export const useTotalSupply = () => {
   return useContractRead({
@@ -54,10 +50,7 @@ export const useReceiverData = () => {
   return { dripRate, lastClaimTimestamp };
 };
 
-export const useTokenAllowance = (
-  token: `0x${string}`,
-  address: `0x${string}` | undefined
-) => {
+export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
   return useContractRead({
     address: token,
     abi: erc20ABI,
@@ -87,11 +80,11 @@ export const useConvertToAssets = (shares: bigint) => {
 };
 
 /** @notice Convert assets */
-export const useConvertToShares = (deposits: bigint) => {
+export const useConvertToShares = (deposits?: bigint) => {
   return useContractRead({
     address: ERC4626_VAULT_ADDRESS,
     abi: erc4626ABI,
     functionName: "convertToShares",
-    args: [deposits],
+    args: [deposits ?? 0n],
   });
 };

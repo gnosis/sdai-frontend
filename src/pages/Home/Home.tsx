@@ -36,7 +36,7 @@ export const Home = () => {
   const { close } = useWeb3Modal();
 
   //card-1
-  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
+  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address, cacheTime: 2_000 });
   //card-2
   const reservesBalance = useUserReservesBalance(address);
   //card-3
@@ -46,7 +46,7 @@ export const Home = () => {
   const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
 
   /** @notice Escape from connect modal */
-  document.addEventListener("keydown", (e) => {
+  document.addEventListener("keydown", e => {
     if (e.key === "Escape") {
       close();
     }
@@ -66,8 +66,7 @@ export const Home = () => {
         const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
         const unclaimedValue = unclaimedTime * dripRate.data;
         const sharesValue =
-          reservesBalance.data +
-          (unclaimedValue * sharesBalance.data.value) / totalShares.data;
+          reservesBalance.data + (unclaimedValue * sharesBalance.data.value) / totalShares.data;
 
         setSharesValue(sharesValue);
       }
@@ -88,18 +87,10 @@ export const Home = () => {
     <div className="page-home">
       <header className="page-component__header">
         <div className="page-component__header__logo">
-          <img
-            className="page-component__header__logo__img"
-            src={sDaiLogo}
-            alt="sDAI"
-          />
+          <img className="page-component__header__logo__img" src={sDaiLogo} alt="sDAI" />
           <div className="page-component__header__logo__text">
-            <div className="page-component__header__logo__title">
-              Gnosis Earn
-            </div>
-            <div className="page-component__header__logo__slogan">
-              Deposit xDAI
-            </div>
+            <div className="page-component__header__logo__title">Gnosis Earn</div>
+            <div className="page-component__header__logo__slogan">Deposit xDAI</div>
           </div>
         </div>
         <div className="page-component__header__userinfo">
@@ -130,9 +121,7 @@ export const Home = () => {
                 currency="%"
               />
             </div>
-            <div className="page-component__paragraph">
-              {paragraph_aboutSDai}
-            </div>
+            <div className="page-component__paragraph">{paragraph_aboutSDai}</div>
             <div className="page-component__main__action-modal">
               <Form />
             </div>

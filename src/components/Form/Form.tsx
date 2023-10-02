@@ -2,13 +2,7 @@ import React, { useState, KeyboardEvent, useMemo } from "react";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
-import {
-  usePrepareContractWrite,
-  useContractWrite,
-  erc20ABI,
-  useBalance,
-  useAccount,
-} from "wagmi";
+import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 import wxdaiLogo from "../../assets/xdai.svg";
@@ -32,6 +26,7 @@ import {
 } from "../../hooks/useData";
 import { TransactionReceipt, parseUnits } from "viem";
 import { formatUnits } from "ethers";
+import { TokenInput } from "../TokenInput/TokenInput";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -62,9 +57,9 @@ const Form: React.FC = () => {
   const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
 
   // State
-  const assetBalance = useBalance({ token: RESERVE_TOKEN_ADDRESS, address });
+  const assetBalance = useBalance({ token: RESERVE_TOKEN_ADDRESS, address, cacheTime: 2_000 });
 
-  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
+  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address, cacheTime: 2_000 });
 
   /** @notice quick account */
   const myAddress = () => address && setReceiver(address);
@@ -79,7 +74,7 @@ const Form: React.FC = () => {
   // State
   const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
   const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
-  const nativeBalance = useBalance({ address });
+  const nativeBalance = useBalance({ address, cacheTime: 2_000 });
   const reservesBalance = useUserReservesBalance(address);
 
   // Current action
@@ -128,13 +123,7 @@ const Form: React.FC = () => {
       name: "Redeem xDAI",
       action: Actions.RedeemXDAI,
     };*/
-  }, [
-    isDeposit,
-    isNative,
-    depositAllowance.data,
-    withdrawAllowance.data,
-    amount,
-  ]);
+  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data, amount]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
@@ -143,7 +132,7 @@ const Form: React.FC = () => {
       functionName: "approve",
       args: [VAULT_ROUTER_ADDRESS, amount],
       enabled: action.action === Actions.ApproveWXDAI,
-    }).config
+    }).config,
   );
 
   const depositXDAI = useContractWrite(
@@ -154,7 +143,7 @@ const Form: React.FC = () => {
       args: [receiver],
       value: amount,
       enabled: action.action === Actions.DepositXDAI,
-    }).config
+    }).config,
   );
 
   const depositWXDAI = useContractWrite(
@@ -164,7 +153,7 @@ const Form: React.FC = () => {
       functionName: "deposit",
       args: [amount, receiver],
       enabled: action.action === Actions.DepositWXDAI,
-    }).config
+    }).config,
   );
 
   const approveSDAI = useContractWrite(
@@ -174,7 +163,7 @@ const Form: React.FC = () => {
       functionName: "approve",
       args: [VAULT_ROUTER_ADDRESS, amount],
       enabled: action.action === Actions.ApproveSDAI,
-    }).config
+    }).config,
   );
 
   const redeemXDAI = useContractWrite(
@@ -184,7 +173,7 @@ const Form: React.FC = () => {
       functionName: "redeemXDAI",
       args: [amount, receiver],
       enabled: action.action === Actions.RedeemXDAI,
-    }).config
+    }).config,
   );
 
   const withdrawWXDAI = useContractWrite(
@@ -194,7 +183,7 @@ const Form: React.FC = () => {
       functionName: "withdraw",
       args: [amount, receiver],
       enabled: action.action === Actions.WithdrawWXDAI,
-    }).config
+    }).config,
   );
 
   const withdrawXDAI = useContractWrite(
@@ -204,7 +193,7 @@ const Form: React.FC = () => {
       functionName: "withdrawXDAI",
       args: [amount, receiver],
       enabled: action.action === Actions.WithdrawXDAI,
-    }).config
+    }).config,
   );
 
   // Store update
@@ -215,6 +204,7 @@ const Form: React.FC = () => {
 
   // TODO: Not all of these need to be refetched constantly
   const refetch = () => {
+    console.log("refetch?");
     totalShares.refetch();
     dripRate.refetch();
     lastClaimTimestamp.refetch();
@@ -229,7 +219,7 @@ const Form: React.FC = () => {
   const onSettled = (
     hash: `0x${string}`,
     data: TransactionReceipt | undefined,
-    error: Error | null
+    error: Error | null,
   ) => {
     // TODO: Handle this in the UI
     if (error) {
@@ -245,11 +235,9 @@ const Form: React.FC = () => {
     refetch();
   };
 
-  if (
-    depositAllowance.isFetching ||
-    withdrawAllowance.isFetching ||
-    nativeBalance.isFetching
-  ) {
+  console.log(depositAllowance.isFetching, withdrawAllowance.isFetching, nativeBalance.isFetching);
+
+  if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
     return <p>Loading...</p>;
   }
 
@@ -264,14 +252,7 @@ const Form: React.FC = () => {
   }[action.action];
 
   const actionModalDisplay = (deposit: boolean) =>
-    `page-component__main__action-modal-display__item${
-      deposit === isDeposit ? "__action" : ""
-    }`;
-
-  const actionModalSwitch = (native: boolean) =>
-    `page-component__main__action-modal-switch__asset${
-      native === isNative ? "__action" : ""
-    }`;
+    `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
 
   return (
     <div className="page-component__main__form">
@@ -295,6 +276,10 @@ const Form: React.FC = () => {
           Redeem
         </div>
       </div>
+
+      <TokenInput onBalanceChange={console.log} />
+
+      {/*
       <div className="page-component__main__action-modal-switch">
         <div
           className={actionModalSwitch(true)}
@@ -356,6 +341,8 @@ const Form: React.FC = () => {
           </div>
         </div>
       </div>
+      */}
+
       <div className="page-component__main__asset__margin">
         <div className="page-component__main__receiver">
           <div className="page-component__main__receiver__title">
@@ -366,17 +353,12 @@ const Form: React.FC = () => {
               className="page-component__main__input__receiver_inputBox"
               type="text"
               placeholder="0x124...5678"
-              onChange={(e) =>
-                e.target.value && setReceiver(e.target.value as `0x${string}`)
-              }
-              onKeyDown={(e) => removeScroll(e)}
+              onChange={e => e.target.value && setReceiver(e.target.value as `0x${string}`)}
+              onKeyDown={e => removeScroll(e)}
               autoComplete="off"
               value={receiver}
             />
-            <div
-              className="page-component__main__input__receiver__btn"
-              onClick={myAddress}
-            >
+            <div className="page-component__main__input__receiver__btn" onClick={myAddress}>
               ME
             </div>
           </div>
