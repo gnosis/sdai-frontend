@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 
 // Assets
-import wxdaiLogo from "../../assets/xdai.svg";
+import xdaiLogo from "../../assets/xdai.svg";
+import wxdaiLogo from "../../assets/wxdai.svg";
 
 // Types
 export type Token = {
@@ -19,7 +20,7 @@ export type TokenSelectorProps = {
 const TOKENS = [
   {
     name: "xDAI",
-    image: wxdaiLogo,
+    image: xdaiLogo,
   },
   {
     name: "WXDAI",
