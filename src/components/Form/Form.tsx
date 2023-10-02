@@ -58,8 +58,6 @@ const Form: React.FC = () => {
   const amount = tokenInput?.balance ?? 0n;
   const amountIsMax = tokenInput?.balance === tokenInput?.max;
 
-  console.log({ sharesBalance });
-
   // Toggles
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
   const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
@@ -177,8 +175,6 @@ const Form: React.FC = () => {
 
   // TODO: Not all of these need to be refetched constantly
   const refetch = () => {
-    console.log("refetch?");
-
     totalShares.refetch();
     dripRate.refetch();
     lastClaimTimestamp.refetch();
