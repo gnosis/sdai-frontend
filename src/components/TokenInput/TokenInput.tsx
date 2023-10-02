@@ -22,7 +22,7 @@ export type TokenInputProps = {
 
 export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange }) => {
   const [token, setToken] = useState<Token>();
-  const [balance, setBalance] = useState<bigint | undefined>();
+  const [balance, setBalance] = useState<bigint>(0n);
   const account = useLoadedAccountStore(
     useShallow(state => ({
       nativeBalance: state.nativeBalance,
@@ -47,18 +47,22 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
   const shares = useConvertToShares(balance);
 
   // Functions
+  const changeBalance = (balance: bigint) => {
+    token && onBalanceChange(token, balance, tokenBalance);
+    setBalance(balance);
+  };
+
   const setMax = () => {
     if (!token || tokenBalance === undefined) {
       return;
     }
 
-    onBalanceChange(token, tokenBalance, tokenBalance);
-    setBalance(tokenBalance);
+    changeBalance(tokenBalance);
   };
 
   const selectToken = (token: Token) => {
     setToken(token);
-    onBalanceChange(token, tokenBalance, tokenBalance);
+    onBalanceChange(token, balance, tokenBalance);
   };
 
   return (
@@ -73,7 +77,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
             autoComplete="off"
             max={tokenBalance ? formatUnits(tokenBalance, 18) : ""}
             value={balance ? formatUnits(balance, 18) : ""}
-            onChange={e => setBalance(parseUnits(e.target.value, 18))}
+            onChange={e => changeBalance(parseUnits(e.target.value, 18))}
           />
         </div>
         <TokenSelector onSelected={selectToken} />
