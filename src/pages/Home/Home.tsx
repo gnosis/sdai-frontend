@@ -1,49 +1,41 @@
-// React
-import { useState, useEffect } from "react";
-// Ethers
-
+import { useEffect } from "react";
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
-import { useAccount, useBalance } from "wagmi";
+import { useBalance } from "wagmi";
 
-import {
-  useUserReservesBalance,
-  useVaultAPY,
-  useTotalSupply,
-  useReceiverData,
-} from "../../hooks/useData";
+// Hooks
+import { useVaultAPY } from "../../hooks/useData";
+import { useAccountShareValue } from "../../hooks/useAccountShareValue";
 
-import "../../components/Input/Input";
+// Components
+import Card from "../../components/Card/Card";
+import Form from "../../components/Form/Form";
+
 // CSS
 import "./Home.css";
 
 // Assets
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
-import Card from "../../components/Card/Card";
-import Form from "../../components/Form/Form";
 
 // Constants
 import { ERC4626_VAULT_ADDRESS, paragraph_aboutSDai } from "../../constants";
+import { useAccountStore } from "../../stores/account";
 
 export const Home = () => {
-  // web3-react -----------
-  // ------------ Refs -------------
+  // Store
+  const address = useAccountStore(store => store.address);
 
-  const { address, isConnected } = useAccount();
+  // Watch for address changes
+  useEffect(() => {
+    useAccountStore.getState().watch();
+  }, []);
 
-  // ------------ States -------------
-
-  /** @notice Opens connect button modal */
+  // Modal close
   const { close } = useWeb3Modal();
 
-  //card-1
-  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address, cacheTime: 2_000 });
-  //card-2
-  const reservesBalance = useUserReservesBalance(address);
-  //card-3
+  // Cards
+  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
   const vaultAPY = useVaultAPY();
-  const totalShares = useTotalSupply();
-  const { dripRate, lastClaimTimestamp } = useReceiverData();
-  const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
+  const sharesValue = useAccountShareValue();
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
@@ -51,37 +43,6 @@ export const Home = () => {
       close();
     }
   });
-
-  //update every 5 seconds
-  useEffect(() => {
-    const update = () => {
-      if (
-        lastClaimTimestamp.data &&
-        dripRate.data &&
-        sharesBalance.data?.value &&
-        reservesBalance.data &&
-        totalShares.data
-      ) {
-        const currentTime = Math.floor(Date.now() / 1000);
-        const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
-        const unclaimedValue = unclaimedTime * dripRate.data;
-        const sharesValue =
-          reservesBalance.data + (unclaimedValue * sharesBalance.data.value) / totalShares.data;
-
-        setSharesValue(sharesValue);
-      }
-    };
-
-    update();
-    const interval = setInterval(update, 500);
-    return () => clearInterval(interval);
-  }, [
-    lastClaimTimestamp.data,
-    dripRate.data,
-    sharesBalance.data?.value,
-    reservesBalance.data,
-    totalShares.data,
-  ]);
 
   return (
     <div className="page-home">
@@ -100,7 +61,7 @@ export const Home = () => {
           </div>
         </div>
       </header>
-      {isConnected ? (
+      {address ? (
         <main className="page-component__main">
           <div className="page-component__main__container">
             <div className="page-component__cards">
