@@ -1,7 +1,10 @@
-import React from "react";
 import Home from "./pages/Home/Home";
 import "./App.css";
-import { EthereumClient, w3mConnectors, w3mProvider } from "@web3modal/ethereum";
+import {
+  EthereumClient,
+  w3mConnectors,
+  w3mProvider,
+} from "@web3modal/ethereum";
 import { Web3Modal } from "@web3modal/react";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { gnosis, gnosisChiado } from "wagmi/chains";

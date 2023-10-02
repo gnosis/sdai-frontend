@@ -1,4 +1,3 @@
-import React from "react";
 import "./Modal.css";
 
 interface IModalProps {
@@ -7,7 +6,11 @@ interface IModalProps {
   children: React.ReactNode;
 }
 
-const Modal: React.FC<IModalProps> = ({ isOpen, closeModalHandler, children }) => {
+const Modal: React.FC<IModalProps> = ({
+  isOpen,
+  closeModalHandler,
+  children,
+}) => {
   return (
     <div
       className="component-modal"
@@ -18,7 +21,10 @@ const Modal: React.FC<IModalProps> = ({ isOpen, closeModalHandler, children }) =
       }}
     >
       <div className="component-modal__modal">{children}</div>
-      <div className="component-modal__close-btn" onClick={closeModalHandler}></div>
+      <div
+        className="component-modal__close-btn"
+        onClick={closeModalHandler}
+      ></div>
     </div>
   );
 };

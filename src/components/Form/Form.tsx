@@ -1,8 +1,14 @@
-import React, { useState, KeyboardEvent, useMemo, useCallback } from "react";
+import React, { useState, KeyboardEvent, useMemo } from "react";
 import Input from "../../components/Input/Input";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
-import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
+import {
+  usePrepareContractWrite,
+  useContractWrite,
+  erc20ABI,
+  useBalance,
+  useAccount,
+} from "wagmi";
 
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 import wxdaiLogo from "../../assets/xdai.svg";
@@ -122,7 +128,13 @@ const Form: React.FC = () => {
       name: "Redeem xDAI",
       action: Actions.RedeemXDAI,
     };*/
-  }, [isDeposit, isNative, depositAllowance.data, withdrawAllowance.data, amount]);
+  }, [
+    isDeposit,
+    isNative,
+    depositAllowance.data,
+    withdrawAllowance.data,
+    amount,
+  ]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
@@ -131,7 +143,7 @@ const Form: React.FC = () => {
       functionName: "approve",
       args: [VAULT_ROUTER_ADDRESS, amount],
       enabled: action.action === Actions.ApproveWXDAI,
-    }).config,
+    }).config
   );
 
   const depositXDAI = useContractWrite(
@@ -142,7 +154,7 @@ const Form: React.FC = () => {
       args: [receiver],
       value: amount,
       enabled: action.action === Actions.DepositXDAI,
-    }).config,
+    }).config
   );
 
   const depositWXDAI = useContractWrite(
@@ -152,7 +164,7 @@ const Form: React.FC = () => {
       functionName: "deposit",
       args: [amount, receiver],
       enabled: action.action === Actions.DepositWXDAI,
-    }).config,
+    }).config
   );
 
   const approveSDAI = useContractWrite(
@@ -162,7 +174,7 @@ const Form: React.FC = () => {
       functionName: "approve",
       args: [VAULT_ROUTER_ADDRESS, amount],
       enabled: action.action === Actions.ApproveSDAI,
-    }).config,
+    }).config
   );
 
   const redeemXDAI = useContractWrite(
@@ -172,7 +184,7 @@ const Form: React.FC = () => {
       functionName: "redeemXDAI",
       args: [amount, receiver],
       enabled: action.action === Actions.RedeemXDAI,
-    }).config,
+    }).config
   );
 
   const withdrawWXDAI = useContractWrite(
@@ -182,7 +194,7 @@ const Form: React.FC = () => {
       functionName: "withdraw",
       args: [amount, receiver],
       enabled: action.action === Actions.WithdrawWXDAI,
-    }).config,
+    }).config
   );
 
   const withdrawXDAI = useContractWrite(
@@ -192,7 +204,7 @@ const Form: React.FC = () => {
       functionName: "withdrawXDAI",
       args: [amount, receiver],
       enabled: action.action === Actions.WithdrawXDAI,
-    }).config,
+    }).config
   );
 
   // Store update
@@ -217,7 +229,7 @@ const Form: React.FC = () => {
   const onSettled = (
     hash: `0x${string}`,
     data: TransactionReceipt | undefined,
-    error: Error | null,
+    error: Error | null
   ) => {
     // TODO: Handle this in the UI
     if (error) {
@@ -233,7 +245,11 @@ const Form: React.FC = () => {
     refetch();
   };
 
-  if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
+  if (
+    depositAllowance.isFetching ||
+    withdrawAllowance.isFetching ||
+    nativeBalance.isFetching
+  ) {
     return <p>Loading...</p>;
   }
 
@@ -248,10 +264,14 @@ const Form: React.FC = () => {
   }[action.action];
 
   const actionModalDisplay = (deposit: boolean) =>
-    `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
+    `page-component__main__action-modal-display__item${
+      deposit === isDeposit ? "__action" : ""
+    }`;
 
   const actionModalSwitch = (native: boolean) =>
-    `page-component__main__action-modal-switch__asset${native === isNative ? "__action" : ""}`;
+    `page-component__main__action-modal-switch__asset${
+      native === isNative ? "__action" : ""
+    }`;
 
   return (
     <div className="page-component__main__form">
@@ -276,16 +296,26 @@ const Form: React.FC = () => {
         </div>
       </div>
       <div className="page-component__main__action-modal-switch">
-        <div className={actionModalSwitch(true)} onClick={() => setNativeAsset(true)}>
+        <div
+          className={actionModalSwitch(true)}
+          onClick={() => setNativeAsset(true)}
+        >
           xDAI
         </div>
-        <div className={actionModalSwitch(false)} onClick={() => setNativeAsset(false)}>
+        <div
+          className={actionModalSwitch(false)}
+          onClick={() => setNativeAsset(false)}
+        >
           WXDAI
         </div>
       </div>
       <div className="page-component__main__asset__margin">
         <div className="page-component__main__asset">
-          <img className="page-component__main__asset__img" src={wxdaiLogo} alt={"WXDAI"} />
+          <img
+            className="page-component__main__asset__img"
+            src={wxdaiLogo}
+            alt={"WXDAI"}
+          />
           <div className="page-component__main__input">
             <input
               type="number"
@@ -293,7 +323,7 @@ const Form: React.FC = () => {
               placeholder="0.00"
               step="0.01"
               autoComplete="off"
-              onChange={(e: any) => setAmount(parseUnits(e.target.value || "0", 18))}
+              onChange={(e) => setAmount(parseUnits(e.target.value || "0", 18))}
               value={amount ? +formatUnits(amount.toString()) : ""}
             />
             <div
@@ -303,7 +333,8 @@ const Form: React.FC = () => {
                   if (!isNative) {
                     assetBalance.data && setAmount(assetBalance.data.value);
                   } else {
-                    nativeBalance.data && setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
+                    nativeBalance.data &&
+                      setAmount(nativeBalance.data.value - GAS_PRICE_OFFSET);
                   }
                 else {
                   reservesBalance.data && setAmount(reservesBalance.data);
@@ -315,7 +346,11 @@ const Form: React.FC = () => {
           </div>
         </div>
         <div className="page-component__main__asset">
-          <img className="page-component__main__asset__img" src={sDaiLogo} alt="sDAI" />
+          <img
+            className="page-component__main__asset__img"
+            src={sDaiLogo}
+            alt="sDAI"
+          />
           <div className="page-component__main__input">
             <Input amount={amount} />
           </div>
@@ -331,14 +366,17 @@ const Form: React.FC = () => {
               className="page-component__main__input__receiver_inputBox"
               type="text"
               placeholder="0x124...5678"
-              onChange={(e: any) => {
-                if (e.target.value) setReceiver(e.target.value);
-              }}
-              onKeyDown={e => removeScroll(e)}
+              onChange={(e) =>
+                e.target.value && setReceiver(e.target.value as `0x${string}`)
+              }
+              onKeyDown={(e) => removeScroll(e)}
               autoComplete="off"
               value={receiver}
             />
-            <div className="page-component__main__input__receiver__btn" onClick={myAddress}>
+            <div
+              className="page-component__main__input__receiver__btn"
+              onClick={myAddress}
+            >
               ME
             </div>
           </div>

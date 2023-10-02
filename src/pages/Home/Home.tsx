@@ -1,5 +1,5 @@
 // React
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 // Ethers
 
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
@@ -46,7 +46,7 @@ export const Home = () => {
   const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
 
   /** @notice Escape from connect modal */
-  document.addEventListener("keydown", e => {
+  document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       close();
     }
@@ -66,7 +66,8 @@ export const Home = () => {
         const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
         const unclaimedValue = unclaimedTime * dripRate.data;
         const sharesValue =
-          reservesBalance.data + (unclaimedValue * sharesBalance.data.value) / totalShares.data;
+          reservesBalance.data +
+          (unclaimedValue * sharesBalance.data.value) / totalShares.data;
 
         setSharesValue(sharesValue);
       }
@@ -87,10 +88,18 @@ export const Home = () => {
     <div className="page-home">
       <header className="page-component__header">
         <div className="page-component__header__logo">
-          <img className="page-component__header__logo__img" src={sDaiLogo} alt="sDAI" />
+          <img
+            className="page-component__header__logo__img"
+            src={sDaiLogo}
+            alt="sDAI"
+          />
           <div className="page-component__header__logo__text">
-            <div className="page-component__header__logo__title">Gnosis Earn</div>
-            <div className="page-component__header__logo__slogan">Deposit xDAI</div>
+            <div className="page-component__header__logo__title">
+              Gnosis Earn
+            </div>
+            <div className="page-component__header__logo__slogan">
+              Deposit xDAI
+            </div>
           </div>
         </div>
         <div className="page-component__header__userinfo">
@@ -104,7 +113,11 @@ export const Home = () => {
         <main className="page-component__main">
           <div className="page-component__main__container">
             <div className="page-component__cards">
-              <Card title="My Shares" value={sharesBalance.data?.value ?? BigInt(0)} currency="sDAI" />
+              <Card
+                title="My Shares"
+                value={sharesBalance.data?.value ?? BigInt(0)}
+                currency="sDAI"
+              />
               <Card
                 title="Value"
                 value={sharesValue ?? BigInt(0)}
@@ -117,7 +130,9 @@ export const Home = () => {
                 currency="%"
               />
             </div>
-            <div className="page-component__paragraph">{paragraph_aboutSDai}</div>
+            <div className="page-component__paragraph">
+              {paragraph_aboutSDai}
+            </div>
             <div className="page-component__main__action-modal">
               <Form />
             </div>

@@ -59,12 +59,12 @@ jobs:
       - name: 'Deploy to S3: development'
         if: ( github.ref == 'refs/heads/develop' )
         run: |
-          aws s3 sync build/ s3://${{ secrets.STAGING_BUCKET_NAME }}/development/ --delete --exclude "*.html" --cache-control max-age=86400,build
-          aws s3 sync build/ s3://${{ secrets.STAGING_BUCKET_NAME }}/development/ --delete --exclude "*" --include "*.html" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html
+          aws s3 sync dist/ s3://${{ secrets.STAGING_BUCKET_NAME }}/development/ --delete --exclude "*.html" --cache-control max-age=86400,build
+          aws s3 sync dist/ s3://${{ secrets.STAGING_BUCKET_NAME }}/development/ --delete --exclude "*" --include "*.html" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html
 
       # Script to deploy to staging environment
       - name: 'Deploy to S3: staging'
         if: ( github.ref == 'refs/heads/staging' )
         run: |
-          aws s3 sync build/ s3://${{ secrets.STAGING_BUCKET_NAME }}/staging/ --delete --exclude "*.html" --cache-control max-age=86400,build
-          aws s3 sync build/ s3://${{ secrets.STAGING_BUCKET_NAME }}/staging/ --delete --exclude "*" --include "*.html" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html
+          aws s3 sync dist/ s3://${{ secrets.STAGING_BUCKET_NAME }}/staging/ --delete --exclude "*.html" --cache-control max-age=86400,build
+          aws s3 sync dist/ s3://${{ secrets.STAGING_BUCKET_NAME }}/staging/ --delete --exclude "*" --include "*.html" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html

@@ -9,7 +9,7 @@ export const formatAddress = (address: string | null | undefined) => {
   }
 };
 
-export const formatWei = (number: BigInt) => {
+export const formatWei = (number: bigint) => {
   return (+ethers.formatUnits(number.toString())).toFixed(2);
 };
 
