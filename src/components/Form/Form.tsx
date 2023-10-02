@@ -29,7 +29,6 @@ enum Actions {
   ApproveWXDAI,
   DepositWXDAI,
   ApproveSDAI,
-  RedeemXDAI,
   WithdrawWXDAI,
   WithdrawXDAI,
 }
@@ -53,10 +52,13 @@ const Form: React.FC = () => {
   }
 
   // Token input
-  const { address, depositAllowance, withdrawAllowance } = account;
+  const { address, depositAllowance, withdrawAllowance, sharesBalance } = account;
   const [tokenInput, setTokenInput] = useState<{ token: Token; balance: bigint; max: bigint }>();
   const isNative = tokenInput?.token.name === "xDAI";
   const amount = tokenInput?.balance ?? 0n;
+  const amountIsMax = tokenInput?.balance === tokenInput?.max;
+
+  console.log({ sharesBalance });
 
   // Toggles
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
@@ -147,22 +149,12 @@ const Form: React.FC = () => {
     }).config,
   );
 
-  const redeemXDAI = useContractWrite(
-    usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
-      abi: VaultAdapter,
-      functionName: "redeemXDAI",
-      args: [amount, receiver],
-      enabled: action.action === Actions.RedeemXDAI,
-    }).config,
-  );
-
   const withdrawWXDAI = useContractWrite(
     usePrepareContractWrite({
       address: VAULT_ROUTER_ADDRESS,
       abi: VaultAdapter,
-      functionName: "withdraw",
-      args: [amount, receiver],
+      functionName: amountIsMax ? "redeem" : "withdraw",
+      args: [amountIsMax ? sharesBalance.value : amount, receiver],
       enabled: action.action === Actions.WithdrawWXDAI,
     }).config,
   );
@@ -171,8 +163,8 @@ const Form: React.FC = () => {
     usePrepareContractWrite({
       address: VAULT_ROUTER_ADDRESS,
       abi: VaultAdapter,
-      functionName: "withdrawXDAI",
-      args: [amount, receiver],
+      functionName: amountIsMax ? "redeemXDAI" : "withdrawXDAI",
+      args: [amountIsMax ? sharesBalance.value : amount, receiver],
       enabled: action.action === Actions.WithdrawXDAI,
     }).config,
   );
@@ -224,7 +216,6 @@ const Form: React.FC = () => {
     [Actions.ApproveWXDAI]: approveWXDAI,
     [Actions.DepositWXDAI]: depositWXDAI,
     [Actions.ApproveSDAI]: approveSDAI,
-    [Actions.RedeemXDAI]: redeemXDAI,
     [Actions.WithdrawWXDAI]: withdrawWXDAI,
     [Actions.WithdrawXDAI]: withdrawXDAI,
   }[action.action];
