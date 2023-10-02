@@ -122,7 +122,7 @@ const Form: React.FC = () => {
       abi: VaultAdapter,
       functionName: "depositXDAI",
       args: [receiver],
-      value: bigIntMin(amount, (tokenInput?.max ?? 0n) - GAS_PRICE_OFFSET),
+      value: bigIntMin(amount, tokenInput?.max ? tokenInput?.max - GAS_PRICE_OFFSET : 0n),
       enabled: action.action === Actions.DepositXDAI,
     }).config,
   );
