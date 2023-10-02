@@ -1,11 +1,9 @@
-import React, { useState, KeyboardEvent, useMemo } from "react";
-import Input from "../../components/Input/Input";
+import React, { useMemo, useState } from "react";
+import { useShallow } from "zustand/shallow";
 import ActionButton from "../../components/ActionButton/ActionButton";
 import "../../constants";
-import { usePrepareContractWrite, useContractWrite, erc20ABI, useBalance, useAccount } from "wagmi";
+import { usePrepareContractWrite, useContractWrite, erc20ABI } from "wagmi";
 
-import sDaiLogo from "../../assets/Savings-xDAI.svg";
-import wxdaiLogo from "../../assets/xdai.svg";
 import {
   ERC4626_VAULT_ADDRESS,
   RESERVE_TOKEN_ADDRESS,
@@ -21,12 +19,11 @@ import {
   useReceiverData,
   useTokenAllowance,
   useTotalSupply,
-  useUserReservesBalance,
   useVaultAPY,
 } from "../../hooks/useData";
-import { TransactionReceipt, parseUnits } from "viem";
-import { formatUnits } from "ethers";
+import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
+import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 
 // Constants
 const GAS_PRICE_OFFSET = BigInt("10000000000000000");
@@ -43,7 +40,25 @@ enum Actions {
 
 const handled: Record<string, boolean> = {};
 const Form: React.FC = () => {
-  const { address } = useAccount();
+  // Store
+  const account = useLoadedAccountStore(
+    useShallow(state => ({
+      address: state.address,
+      nativeBalance: state.nativeBalance,
+      sharesBalance: state.sharesBalance,
+      reservesBalance: state.reservesBalance,
+      depositAllowance: state.depositAllowance,
+      withdrawalAllowance: state.withdrawalAllowance,
+    })),
+  );
+
+  if (!account) {
+    console.log({ account });
+    throw new Error("rendered without account");
+  }
+
+  // TODO: Improve this and specify defaults above
+  const { address } = account;
 
   /** @notice Switches between deposit and redeem modal */
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
@@ -51,31 +66,13 @@ const Form: React.FC = () => {
   const [isNative, setNativeAsset] = useState<boolean>(true);
 
   // Deposit
-  /** @notice Sets asset deposit amount */
   const [amount, setAmount] = useState<bigint>(ZERO);
-  /** @notice Sets the receiver address for deposits/withdrawals */
   const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
-
-  // State
-  const assetBalance = useBalance({ token: RESERVE_TOKEN_ADDRESS, address, cacheTime: 2_000 });
-
-  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address, cacheTime: 2_000 });
-
-  /** @notice quick account */
   const myAddress = () => address && setReceiver(address);
-
-  /** @notice remove the annoying scroll of numbers when press keypad */
-  const removeScroll = (e: KeyboardEvent) => {
-    if (["Space", "ArrowUp", "ArrowDown"].indexOf(e.code) > -1) {
-      e.preventDefault();
-    }
-  };
 
   // State
   const depositAllowance = useTokenAllowance(RESERVE_TOKEN_ADDRESS, address);
   const withdrawAllowance = useTokenAllowance(ERC4626_VAULT_ADDRESS, address);
-  const nativeBalance = useBalance({ address, cacheTime: 2_000 });
-  const reservesBalance = useUserReservesBalance(address);
 
   // Current action
   const action = useMemo(() => {
@@ -208,12 +205,10 @@ const Form: React.FC = () => {
     totalShares.refetch();
     dripRate.refetch();
     lastClaimTimestamp.refetch();
-    sharesBalance.refetch();
-    reservesBalance.refetch();
     depositAllowance.refetch();
     withdrawAllowance.refetch();
-    nativeBalance.refetch();
     vaultAPY.refetch();
+    useAccountStore.getState().fetch();
   };
 
   const onSettled = (
@@ -235,9 +230,7 @@ const Form: React.FC = () => {
     refetch();
   };
 
-  console.log(depositAllowance.isFetching, withdrawAllowance.isFetching, nativeBalance.isFetching);
-
-  if (depositAllowance.isFetching || withdrawAllowance.isFetching || nativeBalance.isFetching) {
+  if (!account) {
     return <p>Loading...</p>;
   }
 
@@ -354,7 +347,6 @@ const Form: React.FC = () => {
               type="text"
               placeholder="0x124...5678"
               onChange={e => e.target.value && setReceiver(e.target.value as `0x${string}`)}
-              onKeyDown={e => removeScroll(e)}
               autoComplete="off"
               value={receiver}
             />

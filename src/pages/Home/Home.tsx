@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Web3NetworkSwitch, useWeb3Modal, Web3Button } from "@web3modal/react";
-import { useBalance } from "wagmi";
+import { useShallow } from "zustand/shallow";
 
 // Hooks
 import { useVaultAPY } from "../../hooks/useData";
@@ -17,12 +17,19 @@ import "./Home.css";
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 
 // Constants
-import { ERC4626_VAULT_ADDRESS, paragraph_aboutSDai } from "../../constants";
-import { useAccountStore } from "../../stores/account";
+import { paragraph_aboutSDai } from "../../constants";
+import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 
 export const Home = () => {
   // Store
-  const address = useAccountStore(store => store.address);
+  const account = useLoadedAccountStore(
+    useShallow(state => ({
+      address: state.address,
+      sharesBalance: state.sharesBalance,
+    })),
+  );
+
+  const { address, sharesBalance } = account || {};
 
   // Watch for address changes
   useEffect(() => {
@@ -33,7 +40,6 @@ export const Home = () => {
   const { close } = useWeb3Modal();
 
   // Cards
-  const sharesBalance = useBalance({ token: ERC4626_VAULT_ADDRESS, address });
   const vaultAPY = useVaultAPY();
   const sharesValue = useAccountShareValue();
 
@@ -65,11 +71,7 @@ export const Home = () => {
         <main className="page-component__main">
           <div className="page-component__main__container">
             <div className="page-component__cards">
-              <Card
-                title="My Shares"
-                value={sharesBalance.data?.value ?? BigInt(0)}
-                currency="sDAI"
-              />
+              <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
               <Card
                 title="Value"
                 value={sharesValue ?? BigInt(0)}

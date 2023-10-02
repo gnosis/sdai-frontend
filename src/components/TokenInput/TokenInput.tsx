@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { type Token, TokenSelector } from "../TokenSelector/TokenSelector";
-import { RESERVE_TOKEN_ADDRESS } from "../../constants";
-import { useAccount, useBalance } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
+import { useShallow } from "zustand/shallow";
+
+// Hooks
 import { useConvertToShares } from "../../hooks/useData";
+
+// Store
+import { useLoadedAccountStore } from "../../stores/account";
+
+// Components
+import { type Token, TokenSelector } from "../TokenSelector/TokenSelector";
 
 const formatBalance = (balance?: bigint) => {
   return new Number(formatUnits(balance ?? 0n, 18)).toFixed(2);
@@ -16,17 +22,26 @@ export type TokenInputProps = {
 export const TokenInput: React.FC<TokenInputProps> = ({ onBalanceChange }) => {
   const [token, setToken] = useState<Token>();
   const [balance, setBalance] = useState<bigint | undefined>();
-  const { address } = useAccount();
+  const account = useLoadedAccountStore(
+    useShallow(state => ({
+      address: state.address,
+      nativeBalance: state.nativeBalance,
+      sharesBalance: state.sharesBalance,
+      reservesBalance: state.reservesBalance,
+      depositAllowance: state.depositAllowance,
+      withdrawalAllowance: state.withdrawalAllowance,
+      wrappedBalance: state.wrappedBalance,
+    })),
+  );
+
+  if (!account) {
+    throw new Error("rendered without account");
+  }
 
   // Balances
-  const wrappedBalance = useBalance({
-    token: RESERVE_TOKEN_ADDRESS,
-    address,
-    cacheTime: 2_000,
-  });
-  const nativeBalance = useBalance({ address, cacheTime: 2_000 });
+  const { nativeBalance, wrappedBalance } = account;
   const tokenBalance = token?.name === "xDAI" ? nativeBalance : wrappedBalance;
-  const balanceValue = tokenBalance.data?.value;
+  const balanceValue = tokenBalance.value;
 
   // Shares
   const shares = useConvertToShares(balance);

@@ -27,10 +27,10 @@ export const useAccountShareValue = () => {
         const currentTime = Math.floor(Date.now() / 1000);
         const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
         const unclaimedValue = unclaimedTime * dripRate.data;
-        const sharesValue =
+        const newSharesValue =
           reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
 
-        setSharesValue(sharesValue);
+        setSharesValue(newSharesValue);
       }
     };
 
