@@ -19,13 +19,13 @@ export type TokenSelectorProps = {
 // Default config
 const TOKENS = [
   {
-    name: "WXDAI",
-    image: wxdaiLogo,
-  },
-  {
     name: "xDAI",
     image: xdaiLogo,
   },
+  {
+    name: "WXDAI",
+    image: wxdaiLogo,
+  }
 ];
 
 export const TokenSelector: React.FC<TokenSelectorProps> = ({ tokens = TOKENS, onSelected }) => {

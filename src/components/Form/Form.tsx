@@ -145,7 +145,7 @@ const Form: React.FC = () => {
       address: ERC4626_VAULT_ADDRESS,
       abi: erc20ABI,
       functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, amount],
+      args: [VAULT_ROUTER_ADDRESS, sharesBalance.value],
       enabled: action.action === Actions.ApproveSDAI,
     }).config,
   );
