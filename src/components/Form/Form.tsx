@@ -223,14 +223,14 @@ const Form: React.FC = () => {
     `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
 
   return (
-    <div className="page-component__main__action-modal gap-10">
-      <div className="page-component__main__form w-3/5">
+    <div className="m-auto flex flex-col content-center py-10 gap-10 sm:flex-row">
+      <div className="flex flex-col gap-5 rounded-lg w-full sm:w-3/5">
         <div className="page-component__main__action-modal-display">
           <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
             Deposit
           </div>
           <div className={actionModalDisplay(false)} onClick={() => setIsDeposit(false)}>
-            Redeem
+            Withdraw
           </div>
         </div>
 
@@ -275,7 +275,8 @@ const Form: React.FC = () => {
 
         <AddToken />
       </div>
-      <div className="page-component__main__info w-2/5 gap-2">
+      
+      <div className="flex flex-col rounded-lg gap-2 w-full sm:w-3/5 ">
         <TransactionOverview
           tokenInput={tokenInput}
           isDeposit={isDeposit}

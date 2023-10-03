@@ -11,10 +11,14 @@ export type TokenInputProps = {
 };
 
 const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput }) => {
-
-  const assets = useConvertToAssets(BigInt(1e18)).data;
+  const baseAssets = useConvertToAssets(BigInt(1e18)).data;
+  const baseShares = useConvertToShares(BigInt(1e18)).data;
   const toShares = useConvertToShares(tokenInput?.balance ?? BigInt(0)).data;
-  
+
+  const formatConvert = (balance?: bigint) => {
+    return new Number(formatUnits(balance ?? 0n, 18)).toFixed(4);
+  };
+
   const formatBalance = (balance?: bigint) => {
     return new Number(formatUnits(balance ?? 0n, 18)).toFixed(2);
   };
@@ -25,20 +29,26 @@ const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput 
       <div className="p-4">
         <div className="page-component__txinfo-data__row py-1">
           <div className=" text-[#7A776D] font-semibold text-sm">Exchange rate</div>
-          <div className="text-[#45433C] font-semibold text-base">{`1 sDAI -> ${formatBalance(
-            assets ?? BigInt(0),
-          )} ${tokenInput?.token.name}`}</div>
+          {isDeposit ? (
+            <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
+              BigInt(1e18),
+            )} ${tokenInput?.token.name} -> ${formatConvert(baseAssets ?? BigInt(0))} sDAI`}</div>
+          ) : (
+            <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
+              BigInt(1e18),
+            )} sDAI -> ${formatConvert(baseShares ?? BigInt(0))} ${tokenInput?.token.name}`}</div>
+          )}
         </div>
         <div className="page-component__txinfo-data__row py-1">
           <div className="text-[#7A776D] font-semibold text-sm">You receive</div>
           {isDeposit ? (
             <div className="text-[#45433C] font-semibold text-base">{`${formatBalance(
               toShares,
-            )} sDAI worth ${formatBalance(tokenInput?.balance)} ${tokenInput?.token.name}`}</div>
-          ) : (
-            <div className="text-[#45433C] font-semibold text-base">{`${formatBalance(tokenInput?.balance)} ${tokenInput?.token.name} worth ${formatBalance(
-              toShares,
             )} sDAI`}</div>
+          ) : (
+            <div className="text-[#45433C] font-semibold text-base">{`${formatBalance(
+              tokenInput?.balance,
+            )} ${tokenInput?.token.name}`}</div>
           )}
         </div>
       </div>

@@ -15,27 +15,25 @@ const Card: React.FC<ICardProps> = ({
   decimals = 2,
   smallDecimals = 0,
 }) => {
-  const full = (+formatUnits(value.toString())).toFixed(
-    decimals + smallDecimals
-  );
+  const full = (+formatUnits(value.toString())).toFixed(decimals + smallDecimals);
 
   return (
-    <div className="page-component__cards-data ">
+    <div className="bg-[#202520] opacity-95 flex flex-col flex-1 shrink-0 w-full align-center rounded-2xl p-5 text-[#ede0cb] sm:gap-6">
       <div className="page-component__main__input__btns">
-        <div className="page-component__cards-data__title">{title}</div>
-      </div>
-      <div className="page-component__cards-data__body">
-        <div className="page-component__cards-data__row">
-          <div className="page-component__cards-data__number">
-            {value ? full.substring(0, full.length - smallDecimals) : "-"}
-            {smallDecimals > 0 && value > 0 && (
-              <span style={{ fontSize: "0.75rem" }}>
-                {full.substring(full.length - smallDecimals)}
-              </span>
-            )}
-          </div>
-          <div>{currency}</div>
+        <div className="font-base align-start overflow-hidden bt-2xl text-sm sm:text-lg">
+          {title}
         </div>
+      </div>
+      <div className="flex content-start gap-2 items-center text-base sm:text-2xl">
+        <div className="text-white">
+          {value ? full.substring(0, full.length - smallDecimals) : "-"}
+          {smallDecimals > 0 && value > 0 && (
+            <span className="text-base sm:text-xl">
+              {full.substring(full.length - smallDecimals)}
+            </span>
+          )}
+        </div>
+        <div>{currency}</div>
       </div>
     </div>
   );

@@ -52,27 +52,29 @@ export const Home = () => {
 
   return (
     <div className="page-home">
-      <header className="page-component__header z-10">
-        <div className="page-component__header__logo">
-          <img className="page-component__header__logo__img" src={sDaiLogo} alt="sDAI" />
-          <div className="page-component__header__logo__text">
-            <div className="page-component__header__logo__title">Gnosis Earn</div>
-            <div className="page-component__header__logo__slogan">Deposit xDAI</div>
+      <header className="header flex shrink-0 content-between items-center px-5 pt-8 z-10 w-full sm:px-10">
+        <div className="page-component__header__logo justify-self-start flex-auto">
+          <img className="h-10 w-10" src={sDaiLogo} alt="sDAI" />
+          <div className="ml-2">
+            <div className="mt-3 font-base text-xl lg:text-2xl">Gnosis Earn</div>
+            <div className="opacity-50 font-base text-base lg:text-xl">Deposit xDAI</div>
           </div>
         </div>
-        <div className="page-component__header__userinfo">
-          <Web3NetworkSwitch />
+        <div className="page-component__header__userinfo justify-self-end flex-row-reverse flex-auto">
+          <div className="hidden sm:inline">
+          <Web3NetworkSwitch/>
+          </div>
           <div>
             <Web3Button />
           </div>
         </div>
       </header>
 
-      <main className="h-screen w-full">
-        <div className="bg-[#f3f0ea] rounded-t-3xl mt-24 pt-10 h-4/5">
+      <main className="w-full h-full m-auto">
+        <div className="bg-[#f3f0ea] rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24 ">
           {address ? (
-            <div className="m-auto w-1/2 h-fit">
-              <div className="page-component__cards">
+            <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-3/4 2xl:w-1/2">
+              <div className="flex flex-col flex-wrap items-center content-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
                 <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
                 <Card
                   title="Value"
@@ -95,9 +97,9 @@ export const Home = () => {
             </div>
           )}
         </div>
-        <div className="footer w-full bg-[#F9F7F5]">
-          <div className="m-auto flex flex-row w-1/2 gap-12">
-            <div className=" flex flex-col my-5 w-3/5 gap-2">
+        <div className="footer w-full bg-[#F9F7F5] h-fit">
+          <div className="m-auto flex flex-col w-full p-5 mb-5 sm:w-3/4 2xl:w-1/2 gap-12 sm:flex-row">
+            <div className=" flex flex-col w-full sm:w-3/5 sm:my-5 gap-2">
               <div className="title flex flex-start gap-2 items-start content-start">
                 <img className="w-5" src={union}></img>
                 <div className="text-[#716E64] font-bold text-base">What is sDAI?</div>
@@ -109,7 +111,7 @@ export const Home = () => {
                 </a>
               </div>
             </div>
-            <div className=" flex flex-col my-5 w-2/5 items-start content-start gap-2">
+            <div className=" flex flex-col w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
               <div className="title flex flex-start gap-2">
                 <img className="w-5" src={refresh}></img>
                 <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
