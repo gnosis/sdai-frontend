@@ -9,8 +9,6 @@ import { useAccountShareValue } from "../../hooks/useAccountShareValue";
 // Components
 import Card from "../../components/Card/Card";
 import Form from "../../components/Form/Form";
-import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
-import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
 // CSS
 import "./Home.css";
 
@@ -87,13 +85,9 @@ export const Home = () => {
                   currency="%"
                 />
               </div>
-              <div className="page-component__main__action-modal gap-10">
+           
                 <Form />
-                <div className="page-component__main__info w-2/5 gap-2">
-                  <TransactionOverview />
-                  <ContractsOverview />
-                </div>
-              </div>
+           
             </div>
           </div>
           <div className="footer w-full bg-[#F9F7F5]">
