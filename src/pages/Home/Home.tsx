@@ -71,7 +71,7 @@ export const Home = () => {
       </header>
       {address ? (
         <main className="h-screen fixed w-full overflow-auto">
-          <div className="page-component__main">
+          <div className="bg-[#f3f0ea] rounded-t-3xl mt-36 pt-12">
             <div className="m-auto w-1/2">
               <div className="page-component__cards">
                 <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
@@ -97,7 +97,7 @@ export const Home = () => {
             </div>
           </div>
           <div className="footer w-full bg-[#F9F7F5]">
-            <div className="m-auto flex flex-row w-1/2 gap-20">
+            <div className="m-auto flex flex-row w-1/2 gap-12">
               <div className=" flex flex-col my-5 w-3/5 gap-2">
                 <div className="title flex flex-start gap-2 items-start content-start">
                   <img className="w-5" src={union}></img>

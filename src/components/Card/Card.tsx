@@ -20,7 +20,7 @@ const Card: React.FC<ICardProps> = ({
   );
 
   return (
-    <div className="page-component__cards-data">
+    <div className="page-component__cards-data ">
       <div className="page-component__main__input__btns">
         <div className="page-component__cards-data__title">{title}</div>
       </div>
