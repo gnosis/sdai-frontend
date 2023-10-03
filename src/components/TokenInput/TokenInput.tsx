@@ -17,7 +17,7 @@ const formatBalance = (balance?: bigint) => {
 
 export type TokenInputProps = {
   deposit: boolean;
-  onBalanceChange: (token: Token, balance: bigint, max: bigint) => void;
+  onBalanceChange: (token: Token, balance: bigint, max: bigint, shares:bigint) => void;
 };
 
 export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange }) => {
@@ -44,11 +44,11 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
     : reservesBalance;
 
   // Shares
-  const shares = useConvertToShares(balance);
+  const shares = useConvertToShares(balance).data ?? BigInt(balance);
 
   // Functions
   const changeBalance = (balance: bigint) => {
-    token && onBalanceChange(token, balance, tokenBalance);
+    token && onBalanceChange(token, balance, tokenBalance, shares);
     setBalance(balance);
   };
 
@@ -62,8 +62,9 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
 
   const selectToken = (token: Token) => {
     setToken(token);
-    onBalanceChange(token, balance, tokenBalance);
+    onBalanceChange(token, balance, tokenBalance, shares);
   };
+
 
   return (
     <div className="rounded-2xl border border-[#DDDAD0] bg-white p-5 my-1">
@@ -83,7 +84,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
         <TokenSelector onSelected={selectToken} />
       </div>
       <div className="flex justify-between mt-2 items-center">
-        <div className="text-[#999588] text-base font-semibold">{formatBalance(shares.data)}</div>
+        <div className="text-[#999588] text-base font-semibold">{formatBalance(shares)}</div>
         <div className="text-sm text-[#7A776D]">
           <span className="font-medium">Balance {formatBalance(tokenBalance)}</span>
           <button className="font-bold ml-2 " onClick={setMax}>

@@ -30,6 +30,7 @@ export const chains: ChainData[] = [gnosis, gnosisChiado];
 export const WALLETCONNECT_PROJECTID = "006ebb71415ac00246c619155f5d56f7";
 
 export const ZERO = BigInt(0);
+export const MAX_UINT256 = BigInt(0xffffffffffffffffffffffffffffffffffffffff);
 
 // Addresses
 export const VAULT_ROUTER_ADDRESS = "0xc1529e13A5842D790da01F778Bf23a3677830986";

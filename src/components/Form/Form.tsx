@@ -11,13 +11,14 @@ import {
   ERC4626_VAULT_ADDRESS,
   RESERVE_TOKEN_ADDRESS,
   VAULT_ROUTER_ADDRESS,
+  MAX_UINT256,
 } from "../../constants";
 
 // ABIS
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import { useReceiverData, useTotalSupply, useVaultAPY } from "../../hooks/useData";
+import { useReceiverData, useTotalSupply, useVaultAPY} from "../../hooks/useData";
 import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
@@ -56,10 +57,11 @@ const Form: React.FC = () => {
 
   // Token input
   const { address, depositAllowance, withdrawAllowance, sharesBalance } = account;
-  const [tokenInput, setTokenInput] = useState<{ token: Token; balance: bigint; max: bigint }>();
+  const [tokenInput, setTokenInput] = useState<{ token: Token; balance: bigint; max: bigint; shares:bigint }>();
   const isNative = tokenInput?.token.name === "xDAI";
   const amount = tokenInput?.balance ?? 0n;
   const amountIsMax = tokenInput?.balance === tokenInput?.max;
+  const sharesAmount = tokenInput?.shares ?? 0n;
 
   // Toggles
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
@@ -89,7 +91,7 @@ const Form: React.FC = () => {
       };
     }
 
-    if (amount > withdrawAllowance) {
+    if (sharesAmount > withdrawAllowance) {
       return {
         name: "Approve sDAI",
         action: Actions.ApproveSDAI,
@@ -145,7 +147,7 @@ const Form: React.FC = () => {
       address: ERC4626_VAULT_ADDRESS,
       abi: erc20ABI,
       functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, sharesBalance.value],
+      args: [VAULT_ROUTER_ADDRESS, MAX_UINT256],
       enabled: action.action === Actions.ApproveSDAI,
     }).config,
   );
@@ -235,7 +237,7 @@ const Form: React.FC = () => {
         </div>
 
         <TokenInput
-          onBalanceChange={(token, balance, max) => setTokenInput({ token, balance, max })}
+          onBalanceChange={(token, balance, max, shares) => setTokenInput({ token, balance, max, shares })}
           deposit={isDeposit}
         />
 
