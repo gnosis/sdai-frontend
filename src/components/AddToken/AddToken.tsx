@@ -23,7 +23,7 @@ const AddToken: React.FC = () =>{
       type: "ERC20",
       options: {
         name: "Savings xDAI",
-        address: "0xaf204776c7245bF4147c2612BF6e5972Ee483701",
+        address: "0x20e5eB701E8d711D419D444814308f8c2243461F",
         symbol: "sDAI",
         decimals: 18,
         image:

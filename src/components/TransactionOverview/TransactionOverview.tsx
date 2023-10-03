@@ -32,11 +32,11 @@ const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput 
           {isDeposit ? (
             <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
               BigInt(1e18),
-            )} ${tokenInput?.token.name} -> ${formatConvert(baseAssets ?? BigInt(0))} sDAI`}</div>
+            )} ${tokenInput?.token.name} -> ${formatConvert(baseShares ?? BigInt(0))} sDAI`}</div>
           ) : (
             <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
               BigInt(1e18),
-            )} sDAI -> ${formatConvert(baseShares ?? BigInt(0))} ${tokenInput?.token.name}`}</div>
+            )} sDAI -> ${formatConvert(baseAssets ?? BigInt(0))} ${tokenInput?.token.name}`}</div>
           )}
         </div>
         <div className="page-component__txinfo-data__row py-1">

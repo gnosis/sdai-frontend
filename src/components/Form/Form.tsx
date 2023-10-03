@@ -65,7 +65,7 @@ const Form: React.FC = () => {
 
   // Toggles
   const [isDeposit, setIsDeposit] = useState<boolean>(true);
-  const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0x");
+  const [receiver, setReceiver] = useState<`0x${string}`>(address ?? "0xNOT_AN_ADDRESS");
   const myAddress = () => address && setReceiver(address);
 
   // Current action
