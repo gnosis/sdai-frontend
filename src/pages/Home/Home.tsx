@@ -36,8 +36,8 @@ export const Home = () => {
     useAccountStore.getState().watch();
   }, []);
 
-    // Modal close
-    const { close } = useWeb3Modal();
+  // Modal close
+  const { close } = useWeb3Modal();
 
   // Cards
   const vaultAPY = useVaultAPY();
@@ -52,7 +52,7 @@ export const Home = () => {
 
   return (
     <div className="page-home">
-      <header className="page-component__header">
+      <header className="page-component__header z-10">
         <div className="page-component__header__logo">
           <img className="page-component__header__logo__img" src={sDaiLogo} alt="sDAI" />
           <div className="page-component__header__logo__text">
@@ -67,10 +67,11 @@ export const Home = () => {
           </div>
         </div>
       </header>
-      {address ? (
-        <main className="h-screen fixed w-full overflow-auto">
-          <div className="bg-[#f3f0ea] rounded-t-3xl mt-36 pt-12">
-            <div className="m-auto w-1/2">
+
+      <main className="h-screen w-full">
+        <div className="bg-[#f3f0ea] rounded-t-3xl mt-24 pt-10 h-4/5">
+          {address ? (
+            <div className="m-auto w-1/2 h-fit">
               <div className="page-component__cards">
                 <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
                 <Card
@@ -85,50 +86,48 @@ export const Home = () => {
                   currency="%"
                 />
               </div>
-           
-                <Form />
-           
+
+              <Form />
             </div>
-          </div>
-          <div className="footer w-full bg-[#F9F7F5]">
-            <div className="m-auto flex flex-row w-1/2 gap-12">
-              <div className=" flex flex-col my-5 w-3/5 gap-2">
-                <div className="title flex flex-start gap-2 items-start content-start">
-                  <img className="w-5" src={union}></img>
-                  <div className="text-[#716E64] font-bold text-base">What is sDAI?</div>
-                </div>
-                <div className="text-[#45433C] font-normal text-l">{paragraph_aboutSDai}</div>
-                <div className="text-[#45433C] text-l">
-                  <a className="font-semibold" href="https://docs.gnosischain.com/" target="_blank">
-                    Learn more
-                  </a>
-                </div>
-              </div>
-              <div className=" flex flex-col my-5 w-2/5 items-start content-start gap-2">
-                <div className="title flex flex-start gap-2">
-                  <img className="w-5" src={refresh}></img>
-                  <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
-                </div>
-                <div className="text-[#45433C] font-normal text-l">
-                  {"Visit "}
-                  <a
-                    className="font-semibold"
-                    href="https://jumper.exchange/?fromChain=1&fromToken=0x6b175474e89094c44da98b954eedeac495271d0f&toChain=100&toToken=0x0000000000000000000000000000000000000000"
-                    target="_blank"
-                  >
-                    jumper.exchange
-                  </a>
-                </div>
-              </div>
+          ) : (
+            <div className="page-component__prewallet h-36 py-36 text-[#45433C] text-2xl">
+              <h1>Connect your Wallet to Gnosis</h1>
             </div>
-          </div>
-        </main>
-      ) : (
-        <div className="page-component__prewallet">
-          <h1>Deposit xDAI and Earn</h1>
-          <Web3Button />
+          )}
         </div>
-      )}
+        <div className="footer w-full bg-[#F9F7F5]">
+          <div className="m-auto flex flex-row w-1/2 gap-12">
+            <div className=" flex flex-col my-5 w-3/5 gap-2">
+              <div className="title flex flex-start gap-2 items-start content-start">
+                <img className="w-5" src={union}></img>
+                <div className="text-[#716E64] font-bold text-base">What is sDAI?</div>
+              </div>
+              <div className="text-[#45433C] font-normal text-l">{paragraph_aboutSDai}</div>
+              <div className="text-[#45433C] text-l">
+                <a className="font-semibold" href="https://docs.gnosischain.com/" target="_blank">
+                  Learn more
+                </a>
+              </div>
+            </div>
+            <div className=" flex flex-col my-5 w-2/5 items-start content-start gap-2">
+              <div className="title flex flex-start gap-2">
+                <img className="w-5" src={refresh}></img>
+                <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
+              </div>
+              <div className="text-[#45433C] font-normal text-l">
+                {"Visit "}
+                <a
+                  className="font-semibold"
+                  href="https://jumper.exchange/?fromChain=1&fromToken=0x6b175474e89094c44da98b954eedeac495271d0f&toChain=100&toToken=0x0000000000000000000000000000000000000000"
+                  target="_blank"
+                >
+                  jumper.exchange
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

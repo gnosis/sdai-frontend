@@ -2,8 +2,6 @@ import { formatUnits } from "ethers";
 
 // Components
 import { type Token } from "../TokenSelector/TokenSelector";
-import { ZERO } from "../../constants";
-
 // Hooks
 import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
 
@@ -16,8 +14,7 @@ const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput 
 
   const assets = useConvertToAssets(BigInt(1e18)).data;
   const toShares = useConvertToShares(tokenInput?.balance ?? BigInt(0)).data;
-  const toAssets = useConvertToAssets(tokenInput?.balance ?? BigInt(0)).data;
-
+  
   const formatBalance = (balance?: bigint) => {
     return new Number(formatUnits(balance ?? 0n, 18)).toFixed(2);
   };

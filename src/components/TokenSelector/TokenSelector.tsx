@@ -19,12 +19,12 @@ export type TokenSelectorProps = {
 // Default config
 const TOKENS = [
   {
-    name: "xDAI",
-    image: xdaiLogo,
-  },
-  {
     name: "WXDAI",
     image: wxdaiLogo,
+  },
+  {
+    name: "xDAI",
+    image: xdaiLogo,
   },
 ];
 
