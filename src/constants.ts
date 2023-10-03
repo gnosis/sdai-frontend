@@ -36,5 +36,5 @@ export const VAULT_ROUTER_ADDRESS = "0xc1529e13A5842D790da01F778Bf23a3677830986"
 export const BRIDGE_RECEIVER = "0x65e75819E4e8250a03958Ba303E8f95F8f578168";
 export const RESERVE_TOKEN_ADDRESS = "0x18c8a7ec7897177E4529065a7E7B0878358B3BfF";
 export const ERC4626_VAULT_ADDRESS = "0x20e5eB701E8d711D419D444814308f8c2243461F";
-
-export const paragraph_aboutSDai = `sDAI is similar to xDAI but with the added benefit of earning interest. \nYou can use it just like xDAI — own, transfer, and use it in the DeFi ecosystem. \nSwapping between sDAI and DAl incurs no costs and no slippage`;
+export const EXPLORER= "https://gnosis-chiado.blockscout.com/";
+export const paragraph_aboutSDai = `sDAI is like DAI but earns interest. Use it as you would DAI in the DeFi world. Switching between sDAI and DAI is cost-free, thanks to the DSR contract`;

@@ -92,8 +92,7 @@
   background: #f3f0ea;
   border-radius: 100px 100px 0px 0px;
   margin-top: 10rem;
-  padding: 3rem 0px;
-  min-height: 100vh;
+  padding-top: 3rem;
 }
 
 .page-component__main__container {
@@ -113,6 +112,15 @@
   border-radius: var(--border-radius-medium);
   padding: 4rem 0px;
 }
+
+.page-component__main__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-medium);
+  border-radius: var(--border-radius-medium);
+  padding: 4rem 0px;
+}
+
 
 .page-component__main__action-modal-display {
   display: flex;
@@ -322,15 +330,10 @@
   font-size: 18px;
   margin-top: 1.5rem;
   text-decoration: none;
-  align-items: end;
+  align-items: center;
   border-radius: var(--border-radius-medium);
   justify-content: center;
   width: 100%;
-}
-
-.page-component__main__input__btns {
-  display: flex;
-  gap: var(--gap-medium);
 }
 
 /**

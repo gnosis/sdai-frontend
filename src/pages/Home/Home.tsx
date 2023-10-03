@@ -9,12 +9,15 @@ import { useAccountShareValue } from "../../hooks/useAccountShareValue";
 // Components
 import Card from "../../components/Card/Card";
 import Form from "../../components/Form/Form";
-
+import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
+import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
 // CSS
 import "./Home.css";
 
 // Assets
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
+import union from "../../assets/union.svg";
+import refresh from "../../assets/refresh.svg";
 
 // Constants
 import { paragraph_aboutSDai } from "../../constants";
@@ -30,14 +33,13 @@ export const Home = () => {
   );
 
   const { address, sharesBalance } = account || {};
-
   // Watch for address changes
   useEffect(() => {
     useAccountStore.getState().watch();
   }, []);
 
-  // Modal close
-  const { close } = useWeb3Modal();
+    // Modal close
+    const { close } = useWeb3Modal();
 
   // Cards
   const vaultAPY = useVaultAPY();
@@ -68,25 +70,62 @@ export const Home = () => {
         </div>
       </header>
       {address ? (
-        <main className="page-component__main">
-          <div className="page-component__main__container">
-            <div className="page-component__cards">
-              <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
-              <Card
-                title="Value"
-                value={sharesValue ?? BigInt(0)}
-                currency="xDAI"
-                smallDecimals={3}
-              />
-              <Card
-                title="Vault APY"
-                value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
-                currency="%"
-              />
+        <main className="h-screen fixed w-full overflow-auto">
+          <div className="page-component__main">
+            <div className="m-auto w-1/2">
+              <div className="page-component__cards">
+                <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
+                <Card
+                  title="Value"
+                  value={sharesValue ?? BigInt(0)}
+                  currency="xDAI"
+                  smallDecimals={3}
+                />
+                <Card
+                  title="Vault APY"
+                  value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
+                  currency="%"
+                />
+              </div>
+              <div className="page-component__main__action-modal gap-10">
+                <Form />
+                <div className="page-component__main__info w-2/5 gap-2">
+                  <TransactionOverview />
+                  <ContractsOverview />
+                </div>
+              </div>
             </div>
-            <div className="page-component__paragraph">{paragraph_aboutSDai}</div>
-            <div className="page-component__main__action-modal">
-              <Form />
+          </div>
+          <div className="footer w-full bg-[#F9F7F5]">
+            <div className="m-auto flex flex-row w-1/2 gap-20">
+              <div className=" flex flex-col my-5 w-3/5 gap-2">
+                <div className="title flex flex-start gap-2 items-start content-start">
+                  <img className="w-5" src={union}></img>
+                  <div className="text-[#716E64] font-bold text-base">What is sDAI?</div>
+                </div>
+                <div className="text-[#45433C] font-normal text-l">{paragraph_aboutSDai}</div>
+                <div className="text-[#45433C] text-l">
+                  <a className="font-semibold" href="https://docs.gnosischain.com/" target="_blank">
+                    Learn more
+                  </a>
+                </div>
+              </div>
+              <div className=" flex flex-col my-5 w-2/5 items-start content-start gap-2">
+                <div className="title flex flex-start gap-2">
+                  <img className="w-5" src={refresh}></img>
+                  <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
+                </div>
+                <div className="text-[#45433C] font-normal text-l">
+                  {"Visit "}
+                  <a
+                    className="font-semibold"
+                    href="https://jumper.exchange/?fromChain=1&fromToken=0x6b175474e89094c44da98b954eedeac495271d0f&toChain=100&toToken=0x0000000000000000000000000000000000000000"
+                    target="_blank"
+                  >
+                    jumper.exchange
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </main>

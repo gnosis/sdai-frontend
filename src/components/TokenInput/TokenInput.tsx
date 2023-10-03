@@ -66,7 +66,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
   };
 
   return (
-    <div className="rounded-2xl border border-[#DDDAD0] bg-white p-6">
+    <div className="rounded-2xl border border-[#DDDAD0] bg-white p-5 my-1">
       <div className="flex justify-between items-center">
         <div className="text-3xl font-semibold">
           <input
@@ -84,9 +84,9 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
       </div>
       <div className="flex justify-between mt-2 items-center">
         <div className="text-[#999588] text-base font-semibold">{formatBalance(shares.data)}</div>
-        <div className="text-xs text-[#7A776D]">
+        <div className="text-sm text-[#7A776D]">
           <span className="font-medium">Balance {formatBalance(tokenBalance)}</span>
-          <button className="font-bold ml-2" onClick={setMax}>
+          <button className="font-bold ml-2 " onClick={setMax}>
             Max
           </button>
         </div>

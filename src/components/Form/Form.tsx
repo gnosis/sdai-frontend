@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import ActionButton from "../../components/ActionButton/ActionButton";
+import AddToken from "../../components/AddToken/AddToken";
 import "../../constants";
 import { usePrepareContractWrite, useContractWrite, erc20ABI } from "wagmi";
 
@@ -220,7 +221,7 @@ const Form: React.FC = () => {
     `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
 
   return (
-    <div className="page-component__main__form">
+    <div className="page-component__main__form w-3/5">
       <div className="page-component__main__action-modal-display">
         <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
           Deposit
@@ -235,27 +236,28 @@ const Form: React.FC = () => {
         deposit={isDeposit}
       />
 
-      <div className="page-component__main__asset__margin">
+      <div className="page-component__main__asset__margin my-1">
         <div className="page-component__main__receiver">
-          <div className="page-component__main__receiver__title">
-            <p>Receiving address</p>
+          <div className="px-2 text-[#45433C] text-l font-medium">
+            <p>Receiving address</p> 
           </div>
-          <div className="page-component__main__input__receiver">
+          <div className="flex flex-row flex-grow items-center rounded-xl border border-[#DDDAD0] bg-white py-3 px-5 h-14">
+            <div className="w-full">
             <input
-              className="page-component__main__input__receiver_inputBox"
+              className="h-full text-[#45433C] text-xl"
               type="text"
               placeholder="0x124...5678"
               onChange={e => e.target.value && setReceiver(e.target.value as `0x${string}`)}
               autoComplete="off"
               value={receiver}
             />
-            <div className="page-component__main__input__receiver__btn" onClick={myAddress}>
-              ME
             </div>
+            <button className="h-full font-bold ml-2 text-sm text-[#7A776D] text-center" onClick={myAddress}>
+              Me
+            </button>
           </div>
         </div>
       </div>
-      <div>&nbsp;</div>
       <div className="page-component__main__input__btns">
         <ActionButton
           method={action.name}
@@ -264,6 +266,9 @@ const Form: React.FC = () => {
           onSettled={onSettled}
         />
       </div>
+
+        <AddToken/>
+
     </div>
   );
 };
