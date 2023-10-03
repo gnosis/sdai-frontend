@@ -34,12 +34,12 @@ const ActionButton: React.FC<IActionButtonProps> = ({
 
   return (
     // <div className="full-width">
-    <div
+    <button
       className="border rounded-md w-full bg-[#FFC549] hover:border-[#FFC549] active:opacity-90 p-4 my-1 text-[#1C352A] text-center font-semibold text-xl "
       onClick={() => mutationTrigger?.()}
     >
       {method}
-    </div>
+    </button>
     //  </div>
   );
 };

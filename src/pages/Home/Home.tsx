@@ -73,8 +73,8 @@ export const Home = () => {
       <main className="w-full h-full m-auto">
         <div className="bg-[#f3f0ea] rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24 ">
           {address ? (
-            <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-3/4 2xl:w-1/2">
-              <div className="flex flex-col flex-wrap items-center content-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
+            <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
+              <div className="flex flex-col flex-wrap items-center justify-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
                 <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
                 <Card
                   title="Value"
@@ -98,8 +98,8 @@ export const Home = () => {
           )}
         </div>
         <div className="footer w-full bg-[#F9F7F5] h-fit">
-          <div className="m-auto flex flex-col w-full p-5 mb-5 sm:w-3/4 2xl:w-1/2 gap-12 sm:flex-row">
-            <div className=" flex flex-col w-full sm:w-3/5 sm:my-5 gap-2">
+          <div className="m-auto flex flex-col w-full p-5 mb-5 sm:p-0 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl gap-12 sm:flex-row">
+            <div className=" flex flex-col flex-1 w-full sm:w-3/5 sm:my-5 gap-2">
               <div className="title flex flex-start gap-2 items-start content-start">
                 <img className="w-5" src={union}></img>
                 <div className="text-[#716E64] font-bold text-base">What is sDAI?</div>
@@ -111,7 +111,7 @@ export const Home = () => {
                 </a>
               </div>
             </div>
-            <div className=" flex flex-col w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
+            <div className=" flex flex-col flex-1 w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
               <div className="title flex flex-start gap-2">
                 <img className="w-5" src={refresh}></img>
                 <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
