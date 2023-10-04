@@ -2,9 +2,9 @@ import Home from "./pages/Home/Home";
 import "./App.css";
 import { EthereumClient, w3mConnectors, w3mProvider } from "@web3modal/ethereum";
 import { Web3Modal } from "@web3modal/react";
-import { Chain, configureChains, createConfig, WagmiConfig } from "wagmi";
+import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
-import { bearNetworkChainMainnet, gnosis, gnosisChiado } from "wagmi/chains";
+import { gnosis, gnosisChiado } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
 const chains = [gnosis, gnosisChiado];
@@ -15,7 +15,10 @@ const { publicClient } = configureChains(
   [
     jsonRpcProvider({
       rpc: chain => ({
-        http: (chain.name === "Gnosis") ? `https://rpc.gnosis.gateway.fm` : `https://rpc.chiado.gnosis.gateway.fm`
+        http:
+          chain.name === "Gnosis"
+            ? `https://rpc.gnosis.gateway.fm`
+            : `https://rpc.chiado.gnosis.gateway.fm`,
       }),
     }),
     w3mProvider({ projectId }),

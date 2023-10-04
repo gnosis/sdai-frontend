@@ -19,33 +19,51 @@ import refresh from "../../assets/refresh.svg";
 
 // Constants
 import { paragraph_aboutSDai } from "../../constants";
-import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
+import { isLoadedAccountStore, useAccountStore, useLoadedAccountStore } from "../../stores/account";
+
+const ConnectedHome = () => {
+  // Store
+  const sharesBalance = useLoadedAccountStore(state => state.sharesBalance);
+  if (!sharesBalance) {
+    throw new Error("rendered without account");
+  }
+
+  // Cards
+  const vaultAPY = useVaultAPY(useAccountStore.getState().chainData.VAULT_ADAPTER_ADDRESS);
+  const sharesValue = useAccountShareValue(useAccountStore.getState().chainData);
+
+  return (
+    <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
+      <div className="flex flex-col flex-wrap items-center justify-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
+        <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
+        <Card title="Value" value={sharesValue ?? BigInt(0)} currency="xDAI" smallDecimals={3} />
+        <Card
+          title="Vault APY"
+          value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
+          currency="%"
+        />
+      </div>
+      <Form />
+    </div>
+  );
+};
 
 export const Home = () => {
   // Modal close
   const { close } = useWeb3Modal();
 
   // Store
-  const account = useLoadedAccountStore(
+  const account = useAccountStore(
     useShallow(state => ({
-      chain: state.chainData,
       address: state.address,
-      sharesBalance: state.sharesBalance,
+      loading: state.loading,
     })),
   );
-
-  const { chain, address, sharesBalance } = account || {};
 
   // Watch for address changes
   useEffect(() => {
     useAccountStore.getState().watch();
   }, []);
-
-
-
-  // Cards
-  const vaultAPY = useVaultAPY(useAccountStore.getState().chainData.VAULT_ADAPTER_ADDRESS);
-  const sharesValue = useAccountShareValue(useAccountStore.getState().chainData);
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
@@ -76,24 +94,8 @@ export const Home = () => {
 
       <main className="w-full h-full m-auto">
         <div className="bg-[#f3f0ea] rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24 ">
-          {chain && address ? (
-            <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
-              <div className="flex flex-col flex-wrap items-center justify-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
-                <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
-                <Card
-                  title="Value"
-                  value={sharesValue ?? BigInt(0)}
-                  currency="xDAI"
-                  smallDecimals={3}
-                />
-                <Card
-                  title="Vault APY"
-                  value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
-                  currency="%"
-                />
-              </div>            
-              <Form />
-            </div>
+          {isLoadedAccountStore(account) ? (
+            <ConnectedHome />
           ) : (
             <div className="page-component__prewallet h-36 py-36 text-[#45433C] text-2xl">
               <h1>Connect your Wallet to Gnosis</h1>
