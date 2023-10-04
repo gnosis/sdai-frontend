@@ -22,26 +22,30 @@ import { paragraph_aboutSDai } from "../../constants";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 
 export const Home = () => {
+  // Modal close
+  const { close } = useWeb3Modal();
+
   // Store
   const account = useLoadedAccountStore(
     useShallow(state => ({
+      chain: state.chainData,
       address: state.address,
       sharesBalance: state.sharesBalance,
     })),
   );
 
-  const { address, sharesBalance } = account || {};
+  const { chain, address, sharesBalance } = account || {};
+
   // Watch for address changes
   useEffect(() => {
     useAccountStore.getState().watch();
   }, []);
 
-  // Modal close
-  const { close } = useWeb3Modal();
+
 
   // Cards
-  const vaultAPY = useVaultAPY();
-  const sharesValue = useAccountShareValue();
+  const vaultAPY = useVaultAPY(useAccountStore.getState().chainData.VAULT_ADAPTER_ADDRESS);
+  const sharesValue = useAccountShareValue(useAccountStore.getState().chainData);
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
@@ -62,7 +66,7 @@ export const Home = () => {
         </div>
         <div className="page-component__header__userinfo justify-self-end flex-row-reverse flex-auto">
           <div className="hidden sm:inline">
-          <Web3NetworkSwitch/>
+            <Web3NetworkSwitch />
           </div>
           <div>
             <Web3Button />
@@ -72,7 +76,7 @@ export const Home = () => {
 
       <main className="w-full h-full m-auto">
         <div className="bg-[#f3f0ea] rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24 ">
-          {address ? (
+          {chain && address ? (
             <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
               <div className="flex flex-col flex-wrap items-center justify-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
                 <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
@@ -87,8 +91,7 @@ export const Home = () => {
                   value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
                   currency="%"
                 />
-              </div>
-
+              </div>            
               <Form />
             </div>
           ) : (

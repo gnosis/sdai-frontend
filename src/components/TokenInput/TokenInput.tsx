@@ -25,6 +25,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
   const [balance, setBalance] = useState<bigint>(0n);
   const account = useLoadedAccountStore(
     useShallow(state => ({
+      chain: state.chainData,
       nativeBalance: state.nativeBalance,
       reservesBalance: state.reservesBalance,
       wrappedBalance: state.wrappedBalance,
@@ -36,7 +37,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
   }
 
   // Balances
-  const { nativeBalance, wrappedBalance, reservesBalance } = account;
+  const {chain, nativeBalance, wrappedBalance, reservesBalance } = account;
   const tokenBalance = deposit
     ? token?.name === "xDAI"
       ? nativeBalance.value
@@ -44,7 +45,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
     : reservesBalance;
 
   // Shares
-  const shares = useConvertToShares(balance).data ?? BigInt(balance);
+  const shares = useConvertToShares(chain.ERC4626_VAULT_ADDRESS, balance).data ?? BigInt(balance);
 
   // Functions
   const changeBalance = (balance: bigint) => {

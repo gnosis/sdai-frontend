@@ -4,45 +4,42 @@ import { useContractRead, erc4626ABI, erc20ABI } from "wagmi";
 import { VaultAdapter } from "../abis/VaultAdapter";
 import { BridgeReceiver } from "../abis/BridgeReceiver";
 
-// Constants
-import { ERC4626_VAULT_ADDRESS, VAULT_ROUTER_ADDRESS, BRIDGE_RECEIVER } from "../constants";
-
-export const useTotalSupply = () => {
+export const useTotalSupply = (target:`0x${string}`) => {
   return useContractRead({
-    address: ERC4626_VAULT_ADDRESS,
+    address: target,
     abi: erc4626ABI,
     functionName: "totalSupply",
   });
 };
 
 /** @notice total reserves */
-export const useTotalReserves = () => {
+export const useTotalReserves = (target:`0x${string}`) => {
   return useContractRead({
-    address: ERC4626_VAULT_ADDRESS,
+    address: target,
     abi: erc4626ABI,
     functionName: "totalAssets",
   });
 };
 
 /** @notice vault APY */
-export const useVaultAPY = () => {
+export const useVaultAPY = (target:`0x${string}`) => {
   return useContractRead({
-    address: VAULT_ROUTER_ADDRESS,
+    address: target,
     abi: VaultAdapter,
     functionName: "vaultAPY",
   });
 };
 
 /** @notice vault APY */
-export const useReceiverData = () => {
+export const useReceiverData = (target:`0x${string}`) => {
   const lastClaimTimestamp = useContractRead({
-    address: BRIDGE_RECEIVER,
+    address: target,
     abi: BridgeReceiver,
     functionName: "lastClaimTimestamp",
   });
 
   const dripRate = useContractRead({
-    address: BRIDGE_RECEIVER,
+    address: target,
     abi: BridgeReceiver,
     functionName: "dripRate",
   });
@@ -50,19 +47,10 @@ export const useReceiverData = () => {
   return { dripRate, lastClaimTimestamp };
 };
 
-export const useTokenAllowance = (token: `0x${string}`, address: `0x${string}` | undefined) => {
-  return useContractRead({
-    address: token,
-    abi: erc20ABI,
-    functionName: "allowance",
-    args: [address ? address : "0x", VAULT_ROUTER_ADDRESS],
-  });
-};
-
 /** @notice user token Balance */
-export const useUserReservesBalance = (address: `0x${string}` | undefined) => {
+export const useUserReservesBalance = (target:`0x${string}`, address: `0x${string}` | undefined) => {
   return useContractRead({
-    address: ERC4626_VAULT_ADDRESS,
+    address: target,
     abi: erc4626ABI,
     functionName: "maxWithdraw",
     args: [address ? address : "0x"],
@@ -70,9 +58,9 @@ export const useUserReservesBalance = (address: `0x${string}` | undefined) => {
 };
 
 /** @notice Convert shares */
-export const useConvertToAssets = (shares: bigint) => {
+export const useConvertToAssets = (target:`0x${string}`, shares: bigint) => {
   return useContractRead({
-    address: ERC4626_VAULT_ADDRESS,
+    address: target,
     abi: erc4626ABI,
     functionName: "convertToAssets",
     args: [shares],
@@ -80,9 +68,9 @@ export const useConvertToAssets = (shares: bigint) => {
 };
 
 /** @notice Convert assets */
-export const useConvertToShares = (deposits?: bigint) => {
+export const useConvertToShares = (target:`0x${string}`, deposits?: bigint) => {
   return useContractRead({
-    address: ERC4626_VAULT_ADDRESS,
+    address: target,
     abi: erc4626ABI,
     functionName: "convertToShares",
     args: [deposits ?? 0n],
