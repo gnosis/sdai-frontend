@@ -40,7 +40,7 @@ const Main: React.FC = () => {
   }
 
   // Token input
-  const { chain, address, sharesBalance } = account;
+  const { address, sharesBalance } = account;
   // Cards
   const vaultAPY = useVaultAPY().data;
   const sharesValue = useAccountShareValue();

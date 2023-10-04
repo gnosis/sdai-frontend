@@ -4,7 +4,7 @@ import ActionButton from "../../components/ActionButton/ActionButton";
 import AddToken from "../../components/AddToken/AddToken";
 import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
 import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
-import { usePrepareContractWrite, useContractWrite, erc20ABI } from "wagmi";
+import { usePrepareContractWrite, useContractWrite, erc20ABI, erc4626ABI } from "wagmi";
 
 import { MAX_UINT256 } from "../../constants";
 
@@ -29,6 +29,7 @@ enum Actions {
   ApproveSDAI,
   WithdrawWXDAI,
   WithdrawXDAI,
+  WithdrawFromVault,
 }
 
 const handled: Record<string, boolean> = {};
@@ -101,6 +102,12 @@ const Form: React.FC = () => {
         action: Actions.WithdrawXDAI,
       };
     }
+    if (chain.VAULT_ADAPTER_ADDRESS === chain.ERC4626_VAULT_ADDRESS){
+      return {
+        name: "Withdraw WXDAI From Vault",
+        action: Actions.WithdrawFromVault,
+      };
+    }
 
     return {
       name: "Withdraw WXDAI",
@@ -169,6 +176,16 @@ const Form: React.FC = () => {
     }).config,
   );
 
+    const WithdrawFromVault = useContractWrite(
+      usePrepareContractWrite({
+        address: chain.ERC4626_VAULT_ADDRESS,
+        abi: erc4626ABI,
+        functionName: amountIsMax ? "redeem" : "withdraw",
+        args: [amountIsMax ? sharesBalance.value : amount, receiver, receiver],
+        enabled: action.action === Actions.WithdrawFromVault,
+      }).config,
+  );
+
   // Store update
   // TODO: Move this to a global store
   const totalShares = useTotalSupply();
@@ -216,6 +233,7 @@ const Form: React.FC = () => {
     [Actions.ApproveSDAI]: approveSDAI,
     [Actions.WithdrawWXDAI]: withdrawWXDAI,
     [Actions.WithdrawXDAI]: withdrawXDAI,
+    [Actions.WithdrawFromVault]: WithdrawFromVault,
   }[action.action];
 
   const actionModalDisplay = (deposit: boolean) =>

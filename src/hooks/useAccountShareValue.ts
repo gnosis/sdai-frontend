@@ -37,7 +37,7 @@ export const useAccountShareValue = () => {
             reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
 
           setSharesValue(newSharesValue);
-        } else setSharesValue(totalShares.data);
+        } else setSharesValue(reservesBalance);
       }
     };
 

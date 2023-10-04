@@ -28,10 +28,10 @@ export const useTotalReserves = () => {
 
 /** @notice vault APY */
 export const useVaultAPY = () => {
-  const address = useLoadedAccountStore(state => state.chainData.VAULT_ADAPTER_ADDRESS, true);
+  const address = useLoadedAccountStore(state => state.chainData.BRIDGE_RECEIVER, true);
   return useContractRead({
     address,
-    abi: VaultAdapter,
+    abi: BridgeReceiver,
     functionName: "vaultAPY",
   });
 };
