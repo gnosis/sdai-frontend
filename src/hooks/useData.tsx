@@ -1,7 +1,6 @@
 import { useContractRead, erc4626ABI } from "wagmi";
 
 // ABIs
-import { VaultAdapter } from "../abis/VaultAdapter";
 import { BridgeReceiver } from "../abis/BridgeReceiver";
 
 // Stores
