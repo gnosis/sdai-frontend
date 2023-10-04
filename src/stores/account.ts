@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   FetchBalanceResult,
   fetchBalance,
+  getPublicClient,
   readContract,
   watchAccount,
   watchNetwork,
@@ -76,6 +77,12 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       return;
     }
 
+    // Fix a race condition on the first load where the chain is not the connected one
+    const client = getPublicClient();
+    if (client.chain.id !== chainData.chainId) {
+      return;
+    }
+
     // This prevents the fetch function from running twice for the same address and chainData
     if (currentingLoading?.address === address && currentingLoading?.chainData === chainData) {
       return;
@@ -125,6 +132,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
     });
 
     const unwatchNetwork = watchNetwork(network => {
+      network.chain;
       if (network.chain) {
         const data = getChainData(network.chain.id);
         data && get().setChainData(data);
