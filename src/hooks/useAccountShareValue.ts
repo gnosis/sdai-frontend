@@ -37,15 +37,20 @@ export const useAccountShareValue = () => {
             reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
 
           setSharesValue(newSharesValue);
-        }
-        else
-          setSharesValue(totalShares.data);
+        } else setSharesValue(totalShares.data);
       }
     };
 
     update();
     const interval = setInterval(update, 5000);
     return () => clearInterval(interval);
-  }, [account, lastClaimTimestamp.data, dripRate.data, totalShares.data]);
+  }, [
+    account,
+    lastClaimTimestamp.data,
+    dripRate.data,
+    totalShares.data,
+    reservesBalance,
+    sharesBalance.value,
+  ]);
   return sharesValue;
 };
