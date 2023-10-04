@@ -54,9 +54,7 @@ export const Home = () => {
   );
 
   // Watch for address changes
-  useEffect(() => {
-    useAccountStore.getState().watch();
-  }, []);
+  useEffect(() => useAccountStore.getState().watch(), []);
 
   /** @notice Escape from connect modal */
   document.addEventListener("keydown", e => {
