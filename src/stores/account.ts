@@ -98,15 +98,21 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
     });
   },
   watch: () => {
-    watchAccount(account => {
+    const unwatchAccount = watchAccount(account => {
       account.address && get().setAddress(account.address);
     });
-    watchNetwork(network => {
+
+    const unwatchNetwork = watchNetwork(network => {
       if (network.chain) {
         const data = getChainData(network.chain.id);
         data && get().setChainData(data);
       }
     });
+
+    return () => {
+      unwatchAccount();
+      unwatchNetwork();
+    };
   },
 }));
 
