@@ -37,4 +37,4 @@ export const ZERO = 0n;
 export const MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn;
 export const WEI_PER_ETHER = 1000000000000000000n;
 
-export const paragraph_aboutSDai = `sDAI are shares of a vault with DAI, which is earning interest in MakerDAO DSR. You can use it in Gnosis DeFi like you would use DAI.`;
+export const paragraph_aboutSDai = `All DAI bridged to Gnosis earn interest at MakerDAO. This interest is given to sDAI holder. You can use sDAI in Gnosis Defi like you would use DAI.`;
