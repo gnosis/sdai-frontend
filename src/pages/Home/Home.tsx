@@ -26,19 +26,15 @@ const ConnectedHome = () => {
   const sharesBalance = useLoadedAccountStore(state => state.sharesBalance, true);
 
   // Cards
-  const vaultAPY = useVaultAPY(useAccountStore.getState().chainData.VAULT_ADAPTER_ADDRESS);
-  const sharesValue = useAccountShareValue(useAccountStore.getState().chainData);
+  const vaultAPY = useVaultAPY();
+  const sharesValue = useAccountShareValue();
 
   return (
     <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
       <div className="flex flex-col flex-wrap items-center justify-center mx-auto mt-0 sm:-mt-24 w-full  gap-1 sm:flex-nowrap sm:gap-5 sm:flex-row 2xl:gap-10 ">
-        <Card title="My Shares" value={sharesBalance?.value ?? BigInt(0)} currency="sDAI" />
-        <Card title="Value" value={sharesValue ?? BigInt(0)} currency="xDAI" smallDecimals={3} />
-        <Card
-          title="Vault APY"
-          value={vaultAPY.data ? vaultAPY.data * BigInt(100) : BigInt(0)}
-          currency="%"
-        />
+        <Card title="My Shares" value={sharesBalance?.value ?? 0n} currency="sDAI" />
+        <Card title="Value" value={sharesValue ?? 0n} currency="xDAI" smallDecimals={3} />
+        <Card title="Vault APY" value={vaultAPY.data ? vaultAPY.data * 100n : 0n} currency="%" />
       </div>
       <Form />
     </div>

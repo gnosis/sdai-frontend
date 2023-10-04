@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
 // Stores
-import { useLoadedAccountStore, } from "../stores/account";
-
-import { ChainData, } from "../constants";
+import { useLoadedAccountStore } from "../stores/account";
 
 // Hooks
 import { useReceiverData, useTotalSupply } from "./useData";
 
-export const useAccountShareValue = (chain:ChainData) => {
+export const useAccountShareValue = () => {
   const account = useLoadedAccountStore(
     useShallow(state => ({
       address: state.address,
@@ -18,10 +16,9 @@ export const useAccountShareValue = (chain:ChainData) => {
     })),
   );
 
-
-  const totalShares = useTotalSupply(chain.ERC4626_VAULT_ADDRESS);
-  const { dripRate, lastClaimTimestamp } = useReceiverData(chain.BRIDGE_RECEIVER);
-  const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
+  const totalShares = useTotalSupply();
+  const { dripRate, lastClaimTimestamp } = useReceiverData();
+  const [sharesValue, setSharesValue] = useState<bigint>(0n);
 
   useEffect(() => {
     const update = () => {
