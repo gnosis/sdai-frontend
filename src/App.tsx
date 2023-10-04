@@ -7,20 +7,34 @@ import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { gnosis, gnosisChiado } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
-const chains = [gnosis, gnosisChiado];
+const chiado = {
+  ...gnosisChiado,
+  contracts: {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
+      blockCreated: 4967313,
+    },
+  },
+} as const;
+
+const chains = [gnosis, chiado];
 const projectId = "006ebb71415ac00246c619155f5d56f7";
 
 const { publicClient } = configureChains(
   chains,
   [
-    w3mProvider({ projectId }),
     jsonRpcProvider({
-      rpc: () => ({
-        http: `https://rpc.chiado.gnosis.gateway.fm`,
+      rpc: chain => ({
+        http:
+          chain.name === "Gnosis"
+            ? `https://rpc.gnosis.gateway.fm`
+            : `https://rpc.chiado.gnosis.gateway.fm`,
       }),
     }),
+    w3mProvider({ projectId }),
     publicProvider(),
   ],
+  { stallTimeout: 3000, batch: { multicall: true } },
 );
 const wagmiConfig = createConfig({
   autoConnect: true,

@@ -4,21 +4,15 @@ import ActionButton from "../../components/ActionButton/ActionButton";
 import AddToken from "../../components/AddToken/AddToken";
 import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
 import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
-import "../../constants";
-import { usePrepareContractWrite, useContractWrite, erc20ABI } from "wagmi";
+import { usePrepareContractWrite, useContractWrite, erc20ABI, erc4626ABI } from "wagmi";
 
-import {
-  ERC4626_VAULT_ADDRESS,
-  RESERVE_TOKEN_ADDRESS,
-  VAULT_ROUTER_ADDRESS,
-  MAX_UINT256,
-} from "../../constants";
+import { MAX_UINT256 } from "../../constants";
 
 // ABIS
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import { useReceiverData, useTotalSupply, useVaultAPY} from "../../hooks/useData";
+import { useReceiverData, useTotalSupply, useVaultAPY } from "../../hooks/useData";
 import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
@@ -26,7 +20,7 @@ import { Token } from "../TokenSelector/TokenSelector";
 import { bigIntMax, bigIntMin } from "../../utils/utils";
 
 // Constants
-const GAS_PRICE_OFFSET = BigInt("10000000000000000");
+const GAS_PRICE_OFFSET = 10000000000000000n;
 
 enum Actions {
   DepositXDAI,
@@ -35,6 +29,7 @@ enum Actions {
   ApproveSDAI,
   WithdrawWXDAI,
   WithdrawXDAI,
+  WithdrawFromVault,
 }
 
 const handled: Record<string, boolean> = {};
@@ -42,6 +37,7 @@ const Form: React.FC = () => {
   // Store
   const account = useLoadedAccountStore(
     useShallow(state => ({
+      chain: state.chainData,
       address: state.address,
       nativeBalance: state.nativeBalance,
       sharesBalance: state.sharesBalance,
@@ -49,15 +45,17 @@ const Form: React.FC = () => {
       depositAllowance: state.depositAllowance,
       withdrawAllowance: state.withdrawAllowance,
     })),
+    true,
   );
 
-  if (!account) {
-    throw new Error("rendered without account");
-  }
-
   // Token input
-  const { address, depositAllowance, withdrawAllowance, sharesBalance } = account;
-  const [tokenInput, setTokenInput] = useState<{ token: Token; balance: bigint; max: bigint; shares:bigint }>();
+  const { chain, address, depositAllowance, withdrawAllowance, sharesBalance } = account;
+  const [tokenInput, setTokenInput] = useState<{
+    token: Token;
+    balance: bigint;
+    max: bigint;
+    shares: bigint;
+  }>();
   const isNative = tokenInput?.token.name === "xDAI";
   const amount = tokenInput?.balance ?? 0n;
   const amountIsMax = tokenInput?.balance === tokenInput?.max;
@@ -104,26 +102,32 @@ const Form: React.FC = () => {
         action: Actions.WithdrawXDAI,
       };
     }
+    if (chain.VAULT_ADAPTER_ADDRESS === chain.ERC4626_VAULT_ADDRESS){
+      return {
+        name: "Withdraw WXDAI From Vault",
+        action: Actions.WithdrawFromVault,
+      };
+    }
 
     return {
       name: "Withdraw WXDAI",
       action: Actions.WithdrawWXDAI,
     };
-  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount]);
+  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount, sharesAmount]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: RESERVE_TOKEN_ADDRESS,
+      address: chain.RESERVE_TOKEN_ADDRESS,
       abi: erc20ABI,
       functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, amount],
+      args: [chain.VAULT_ADAPTER_ADDRESS, amount],
       enabled: action.action === Actions.ApproveWXDAI,
     }).config,
   );
 
   const depositXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
+      address: chain.VAULT_ADAPTER_ADDRESS,
       abi: VaultAdapter,
       functionName: "depositXDAI",
       args: [receiver],
@@ -134,7 +138,7 @@ const Form: React.FC = () => {
 
   const depositWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
+      address: chain.VAULT_ADAPTER_ADDRESS,
       abi: VaultAdapter,
       functionName: "deposit",
       args: [amount, receiver],
@@ -144,17 +148,17 @@ const Form: React.FC = () => {
 
   const approveSDAI = useContractWrite(
     usePrepareContractWrite({
-      address: ERC4626_VAULT_ADDRESS,
+      address: chain.ERC4626_VAULT_ADDRESS,
       abi: erc20ABI,
       functionName: "approve",
-      args: [VAULT_ROUTER_ADDRESS, MAX_UINT256],
+      args: [chain.VAULT_ADAPTER_ADDRESS, MAX_UINT256],
       enabled: action.action === Actions.ApproveSDAI,
     }).config,
   );
 
   const withdrawWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
+      address: chain.VAULT_ADAPTER_ADDRESS,
       abi: VaultAdapter,
       functionName: amountIsMax ? "redeem" : "withdraw",
       args: [amountIsMax ? sharesBalance.value : amount, receiver],
@@ -164,12 +168,22 @@ const Form: React.FC = () => {
 
   const withdrawXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: VAULT_ROUTER_ADDRESS,
+      address: chain.VAULT_ADAPTER_ADDRESS,
       abi: VaultAdapter,
       functionName: amountIsMax ? "redeemXDAI" : "withdrawXDAI",
       args: [amountIsMax ? sharesBalance.value : amount, receiver],
       enabled: action.action === Actions.WithdrawXDAI,
     }).config,
+  );
+
+    const WithdrawFromVault = useContractWrite(
+      usePrepareContractWrite({
+        address: chain.ERC4626_VAULT_ADDRESS,
+        abi: erc4626ABI,
+        functionName: amountIsMax ? "redeem" : "withdraw",
+        args: [amountIsMax ? sharesBalance.value : amount, receiver, receiver],
+        enabled: action.action === Actions.WithdrawFromVault,
+      }).config,
   );
 
   // Store update
@@ -219,6 +233,7 @@ const Form: React.FC = () => {
     [Actions.ApproveSDAI]: approveSDAI,
     [Actions.WithdrawWXDAI]: withdrawWXDAI,
     [Actions.WithdrawXDAI]: withdrawXDAI,
+    [Actions.WithdrawFromVault]: WithdrawFromVault,
   }[action.action];
 
   const actionModalDisplay = (deposit: boolean) =>
@@ -237,7 +252,9 @@ const Form: React.FC = () => {
         </div>
 
         <TokenInput
-          onBalanceChange={(token, balance, max, shares) => setTokenInput({ token, balance, max, shares })}
+          onBalanceChange={(token, balance, max, shares) =>
+            setTokenInput({ token, balance, max, shares })
+          }
           deposit={isDeposit}
         />
 
@@ -277,12 +294,9 @@ const Form: React.FC = () => {
 
         <AddToken />
       </div>
-      
+
       <div className="flex flex-col rounded-lg gap-2 w-full sm:w-3/5 ">
-        <TransactionOverview
-          tokenInput={tokenInput}
-          isDeposit={isDeposit}
-        />
+        <TransactionOverview tokenInput={tokenInput} isDeposit={isDeposit} />
         <ContractsOverview />
       </div>
     </div>

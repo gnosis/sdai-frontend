@@ -8,9 +8,7 @@ interface IInputProps {
 
 const Input: React.FC<IInputProps> = ({ amount }) => {
   const shares = useConvertToShares(amount);
-  const value = (+ethers.formatUnits(BigInt(shares.data ?? BigInt(0)))).toFixed(
-    2
-  );
+  const value = (+ethers.formatUnits(shares.data ?? 0n)).toFixed(2);
 
   // const value = ethers.commify(chosenValue);
 

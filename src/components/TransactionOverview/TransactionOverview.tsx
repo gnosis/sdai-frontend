@@ -2,8 +2,10 @@ import { formatUnits } from "ethers";
 
 // Components
 import { type Token } from "../TokenSelector/TokenSelector";
+
 // Hooks
 import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
+import { WEI_PER_ETHER } from "../../constants";
 
 export type TokenInputProps = {
   isDeposit: boolean;
@@ -11,9 +13,9 @@ export type TokenInputProps = {
 };
 
 const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput }) => {
-  const baseAssets = useConvertToAssets(BigInt(1e18)).data;
-  const baseShares = useConvertToShares(BigInt(1e18)).data;
-  const toShares = useConvertToShares(tokenInput?.balance ?? BigInt(0)).data;
+  const baseAssets = useConvertToAssets(WEI_PER_ETHER).data;
+  const baseShares = useConvertToShares(WEI_PER_ETHER).data;
+  const toShares = useConvertToShares(tokenInput?.balance ?? 0n).data;
 
   const formatConvert = (balance?: bigint) => {
     return new Number(formatUnits(balance ?? 0n, 18)).toFixed(4);
@@ -31,12 +33,12 @@ const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput 
           <div className=" text-[#7A776D] font-semibold text-sm">Exchange rate</div>
           {isDeposit ? (
             <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
-              BigInt(1e18),
-            )} ${tokenInput?.token.name} -> ${formatConvert(baseShares ?? BigInt(0))} sDAI`}</div>
+              WEI_PER_ETHER,
+            )} ${tokenInput?.token.name} -> ${formatConvert(baseShares ?? 0n)} sDAI`}</div>
           ) : (
             <div className="text-[#45433C] font-semibold text-base">{`${formatConvert(
-              BigInt(1e18),
-            )} sDAI -> ${formatConvert(baseAssets ?? BigInt(0))} ${tokenInput?.token.name}`}</div>
+              WEI_PER_ETHER,
+            )} sDAI -> ${formatConvert(baseAssets ?? 0n)} ${tokenInput?.token.name}`}</div>
           )}
         </div>
         <div className="page-component__txinfo-data__row py-1">

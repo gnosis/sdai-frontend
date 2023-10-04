@@ -10,34 +10,47 @@ import { useReceiverData, useTotalSupply } from "./useData";
 export const useAccountShareValue = () => {
   const account = useLoadedAccountStore(
     useShallow(state => ({
+      chain: state.chainData,
       address: state.address,
       sharesBalance: state.sharesBalance,
       reservesBalance: state.reservesBalance,
     })),
   );
+  if (!account) {
+    throw new Error("rendered without account");
+  }
+
+  const { sharesBalance, reservesBalance } = account;
 
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
-  const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
+  const [sharesValue, setSharesValue] = useState<bigint>(0n);
 
   useEffect(() => {
     const update = () => {
-      if (account && lastClaimTimestamp.data && dripRate.data && totalShares.data) {
-        const { sharesBalance, reservesBalance } = account;
-        const currentTime = Math.floor(Date.now() / 1000);
-        const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
-        const unclaimedValue = unclaimedTime * dripRate.data;
-        const newSharesValue =
-          reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
+      if (account && totalShares.data) {
+        if (lastClaimTimestamp.data && dripRate.data) {
+          const currentTime = Math.floor(Date.now() / 1000);
+          const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
+          const unclaimedValue = unclaimedTime * dripRate.data;
+          const newSharesValue =
+            reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
 
-        setSharesValue(newSharesValue);
+          setSharesValue(newSharesValue);
+        } else setSharesValue(reservesBalance);
       }
     };
 
     update();
-    const interval = setInterval(update, 500);
+    const interval = setInterval(update, 5000);
     return () => clearInterval(interval);
-  }, [account, lastClaimTimestamp.data, dripRate.data, totalShares.data]);
-
+  }, [
+    account,
+    lastClaimTimestamp.data,
+    dripRate.data,
+    totalShares.data,
+    reservesBalance,
+    sharesBalance.value,
+  ]);
   return sharesValue;
 };

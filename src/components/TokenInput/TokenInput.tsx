@@ -17,7 +17,7 @@ const formatBalance = (balance?: bigint) => {
 
 export type TokenInputProps = {
   deposit: boolean;
-  onBalanceChange: (token: Token, balance: bigint, max: bigint, shares:bigint) => void;
+  onBalanceChange: (token: Token, balance: bigint, max: bigint, shares: bigint) => void;
 };
 
 export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange }) => {
@@ -29,11 +29,8 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
       reservesBalance: state.reservesBalance,
       wrappedBalance: state.wrappedBalance,
     })),
+    true,
   );
-
-  if (!account) {
-    throw new Error("rendered without account");
-  }
 
   // Balances
   const { nativeBalance, wrappedBalance, reservesBalance } = account;
@@ -44,7 +41,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
     : reservesBalance;
 
   // Shares
-  const shares = useConvertToShares(balance).data ?? BigInt(balance);
+  const shares = useConvertToShares(balance).data ?? balance;
 
   // Functions
   const changeBalance = (balance: bigint) => {
@@ -64,7 +61,6 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
     setToken(token);
     onBalanceChange(token, balance, tokenBalance, shares);
   };
-
 
   return (
     <div className="rounded-2xl border border-[#DDDAD0] bg-white p-5 my-1">
