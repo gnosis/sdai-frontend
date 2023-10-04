@@ -5,19 +5,18 @@ import { ethers } from "ethers";
 export const bigIntMin = (...args: bigint[]) => args.reduce((m, e) => (e < m ? e : m));
 export const bigIntMax = (...args: bigint[]) => args.reduce((m, e) => (e > m ? e : m));
 
-export const bigIntSqrt = (x:bigint) => {
+export const bigIntSqrt = (x: bigint) => {
   let z = (x + 1n) / 2n;
   let y = x;
-  while (z-y < 0) {
-      y = z;
-      z = x / z + (z / 2n);
+  while (z - y < 0) {
+    y = z;
+    z = x / z + z / 2n;
   }
   return y;
-}
+};
 
-const bigIntCeil = (n:bigint, d:bigint) => n / d + (n % d ? 1n : 0n);
-const bigIntfloor = (n:bigint, d:bigint) => n / d;
-
+export const bigIntCeil = (n: bigint, d: bigint) => n / d + (n % d ? 1n : 0n);
+export const bigIntfloor = (n: bigint, d: bigint) => n / d;
 
 /** @notice Format address to `0x1234...5678` */
 export const formatAddress = (address: string | null | undefined) => {
@@ -36,7 +35,6 @@ export const formatContractAddress = (address: string | null | undefined) => {
 };
 
 export default { formatAddress, formatWei, formatContractAddress };
-
 
 export interface VaultState {
   totalShares: bigint;

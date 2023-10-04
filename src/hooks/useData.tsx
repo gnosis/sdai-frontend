@@ -1,10 +1,10 @@
-import { useContractRead, erc4626ABI, erc20ABI } from "wagmi";
+import { useContractRead, erc4626ABI } from "wagmi";
 
 // ABIs
 import { VaultAdapter } from "../abis/VaultAdapter";
 import { BridgeReceiver } from "../abis/BridgeReceiver";
 
-export const useTotalSupply = (target:`0x${string}`) => {
+export const useTotalSupply = (target: `0x${string}`) => {
   return useContractRead({
     address: target,
     abi: erc4626ABI,
@@ -13,7 +13,7 @@ export const useTotalSupply = (target:`0x${string}`) => {
 };
 
 /** @notice total reserves */
-export const useTotalReserves = (target:`0x${string}`) => {
+export const useTotalReserves = (target: `0x${string}`) => {
   return useContractRead({
     address: target,
     abi: erc4626ABI,
@@ -22,7 +22,7 @@ export const useTotalReserves = (target:`0x${string}`) => {
 };
 
 /** @notice vault APY */
-export const useVaultAPY = (target:`0x${string}`) => {
+export const useVaultAPY = (target: `0x${string}`) => {
   return useContractRead({
     address: target,
     abi: VaultAdapter,
@@ -31,7 +31,7 @@ export const useVaultAPY = (target:`0x${string}`) => {
 };
 
 /** @notice vault APY */
-export const useReceiverData = (target:`0x${string}`) => {
+export const useReceiverData = (target: `0x${string}`) => {
   const lastClaimTimestamp = useContractRead({
     address: target,
     abi: BridgeReceiver,
@@ -48,7 +48,10 @@ export const useReceiverData = (target:`0x${string}`) => {
 };
 
 /** @notice user token Balance */
-export const useUserReservesBalance = (target:`0x${string}`, address: `0x${string}` | undefined) => {
+export const useUserReservesBalance = (
+  target: `0x${string}`,
+  address: `0x${string}` | undefined,
+) => {
   return useContractRead({
     address: target,
     abi: erc4626ABI,
@@ -58,7 +61,7 @@ export const useUserReservesBalance = (target:`0x${string}`, address: `0x${strin
 };
 
 /** @notice Convert shares */
-export const useConvertToAssets = (target:`0x${string}`, shares: bigint) => {
+export const useConvertToAssets = (target: `0x${string}`, shares: bigint) => {
   return useContractRead({
     address: target,
     abi: erc4626ABI,
@@ -68,7 +71,7 @@ export const useConvertToAssets = (target:`0x${string}`, shares: bigint) => {
 };
 
 /** @notice Convert assets */
-export const useConvertToShares = (target:`0x${string}`, deposits?: bigint) => {
+export const useConvertToShares = (target: `0x${string}`, deposits?: bigint) => {
   return useContractRead({
     address: target,
     abi: erc4626ABI,
