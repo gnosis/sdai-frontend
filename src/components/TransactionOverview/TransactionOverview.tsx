@@ -1,9 +1,11 @@
 import { formatUnits } from "ethers";
+import { useShallow } from "zustand/shallow";
 
 // Components
 import { type Token } from "../TokenSelector/TokenSelector";
 // Hooks
 import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
+import { useLoadedAccountStore } from "../../stores/account";
 
 export type TokenInputProps = {
   isDeposit: boolean;
@@ -11,9 +13,22 @@ export type TokenInputProps = {
 };
 
 const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput }) => {
-  const baseAssets = useConvertToAssets(BigInt(1e18)).data;
-  const baseShares = useConvertToShares(BigInt(1e18)).data;
-  const toShares = useConvertToShares(tokenInput?.balance ?? BigInt(0)).data;
+
+  const account = useLoadedAccountStore(
+    useShallow(state => ({
+      chain: state.chainData,
+    })),
+  );
+
+  if (!account) {
+    throw new Error("rendered without account");
+  }
+
+  // Token input
+  const { chain } = account;
+  const baseAssets = useConvertToAssets(chain.ERC4626_VAULT_ADDRESS ,BigInt(1e18)).data;
+  const baseShares = useConvertToShares(chain.ERC4626_VAULT_ADDRESS, BigInt(1e18)).data;
+  const toShares = useConvertToShares(chain.ERC4626_VAULT_ADDRESS, tokenInput?.balance ?? BigInt(0)).data;
 
   const formatConvert = (balance?: bigint) => {
     return new Number(formatUnits(balance ?? 0n, 18)).toFixed(4);

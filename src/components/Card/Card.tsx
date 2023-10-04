@@ -26,7 +26,7 @@ const Card: React.FC<ICardProps> = ({
       </div>
       <div className="flex content-start gap-2 items-center text-base sm:text-2xl">
         <div className="text-white">
-          {value ? full.substring(0, full.length - smallDecimals) : "-"}
+          {value ? full.substring(0, full.length - smallDecimals) : "0"}
           {smallDecimals > 0 && value > 0 && (
             <span className="text-base sm:text-xl">
               {full.substring(full.length - smallDecimals)}

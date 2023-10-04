@@ -15,8 +15,8 @@ export const bigIntSqrt = (x:bigint) => {
   return y;
 }
 
-const bigIntCeil = (n:bigint, d:bigint) => n / d + (n % d ? 1n : 0n);
-const bigIntfloor = (n:bigint, d:bigint) => n / d;
+//const bigIntCeil = (n:bigint, d:bigint) => n / d + (n % d ? 1n : 0n);
+//const bigIntfloor = (n:bigint, d:bigint) => n / d;
 
 
 /** @notice Format address to `0x1234...5678` */

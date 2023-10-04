@@ -1,4 +1,4 @@
-import { useContractRead, erc4626ABI, erc20ABI } from "wagmi";
+import { useContractRead, erc4626ABI } from "wagmi";
 
 // ABIs
 import { VaultAdapter } from "../abis/VaultAdapter";

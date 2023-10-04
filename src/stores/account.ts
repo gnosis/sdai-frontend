@@ -24,7 +24,6 @@ export interface AccountStoreLoaded extends AccountStore {
   wrappedBalance: FetchBalanceResult;
   sharesBalance: FetchBalanceResult;
   reservesBalance: bigint;
-  maxWithdrawBalance: bigint;
   depositAllowance: bigint;
   withdrawAllowance: bigint;
 }
@@ -66,19 +65,12 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       wrappedBalance,
       sharesBalance,
       reservesBalance,
-      maxWithdrawBalance,
       depositAllowance,
       withdrawAllowance,
     ] = await Promise.all([
       fetchBalance({ address }),
       fetchBalance({ address, token: chainData.RESERVE_TOKEN_ADDRESS }),
       fetchBalance({ token: chainData.ERC4626_VAULT_ADDRESS, address }),
-      readContract({
-        address: chainData.ERC4626_VAULT_ADDRESS,
-        abi: erc4626ABI,
-        functionName: "maxWithdraw",
-        args: [address],
-      }),
       readContract({
         address: chainData.ERC4626_VAULT_ADDRESS,
         abi: erc4626ABI,
@@ -94,7 +86,6 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       wrappedBalance,
       sharesBalance,
       reservesBalance,
-      maxWithdrawBalance,
       depositAllowance,
       withdrawAllowance,
     });
