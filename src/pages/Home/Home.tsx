@@ -23,10 +23,7 @@ import { isLoadedAccountStore, useAccountStore, useLoadedAccountStore } from "..
 
 const ConnectedHome = () => {
   // Store
-  const sharesBalance = useLoadedAccountStore(state => state.sharesBalance);
-  if (!sharesBalance) {
-    throw new Error("rendered without account");
-  }
+  const sharesBalance = useLoadedAccountStore(state => state.sharesBalance, true);
 
   // Cards
   const vaultAPY = useVaultAPY(useAccountStore.getState().chainData.VAULT_ADAPTER_ADDRESS);

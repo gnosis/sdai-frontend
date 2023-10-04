@@ -44,11 +44,8 @@ const Form: React.FC = () => {
       depositAllowance: state.depositAllowance,
       withdrawAllowance: state.withdrawAllowance,
     })),
+    true,
   );
-
-  if (!account) {
-    throw new Error("rendered without account");
-  }
 
   // Token input
   const { chain, address, depositAllowance, withdrawAllowance, sharesBalance } = account;

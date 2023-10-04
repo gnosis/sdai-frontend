@@ -127,6 +127,13 @@ export const isLoadedAccountStore = <
   return !!store.address && !store.loading;
 };
 
-export const useLoadedAccountStore = <U>(selector: (state: AccountStoreLoaded) => U): U | false => {
-  return useAccountStore(state => isLoadedAccountStore(state) && selector(state));
+export const useLoadedAccountStore = <U, T extends true | false>(
+  selector: (state: AccountStoreLoaded) => U,
+  throwError?: T,
+): U | (T extends true ? never : false) => {
+  const result = useAccountStore(state => isLoadedAccountStore(state) && selector(state));
+  if (!result && throwError) {
+    throw new Error("rendered without account");
+  }
+  return result as U;
 };

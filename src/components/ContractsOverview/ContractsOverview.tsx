@@ -8,10 +8,9 @@ const ContractsOverview: React.FC = () => {
     useShallow(state => ({
       chainData: state.chainData,
     })),
+    true,
   );
-  if (!account) {
-    throw new Error("rendered without account");
-  }
+
   // Token input
   const { chainData } = account;
 
