@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
 // Stores
-import { useLoadedAccountStore, } from "../stores/account";
+import { useLoadedAccountStore } from "../stores/account";
+
 // Hooks
 import { useReceiverData, useTotalSupply } from "./useData";
 
@@ -15,20 +16,18 @@ export const useAccountShareValue = () => {
       reservesBalance: state.reservesBalance,
     })),
   );
-
   if (!account) {
     throw new Error("rendered without account");
   }
 
-  const { chain, sharesBalance, reservesBalance } = account;
+  const { sharesBalance, reservesBalance } = account;
 
-  const totalShares = useTotalSupply(chain.ERC4626_VAULT_ADDRESS);
-  const { dripRate, lastClaimTimestamp } = useReceiverData(chain.BRIDGE_RECEIVER);
-  const [sharesValue, setSharesValue] = useState<bigint>(BigInt(0));
+  const totalShares = useTotalSupply();
+  const { dripRate, lastClaimTimestamp } = useReceiverData();
+  const [sharesValue, setSharesValue] = useState<bigint>(0n);
 
   useEffect(() => {
     const update = () => {
-      console.log(lastClaimTimestamp.data, dripRate.data, totalShares.data)
       if (account && totalShares.data) {
         if (lastClaimTimestamp.data && dripRate.data) {
           const currentTime = Math.floor(Date.now() / 1000);

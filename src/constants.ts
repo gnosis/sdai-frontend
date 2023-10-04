@@ -29,11 +29,12 @@ export const supportedChains: ChainData[] = [gnosis, gnosisChiado];
 
 export const getChainData = (id: number) => {
   return supportedChains.find(x => x.chainId === id);
-}
+};
 
 export const WALLETCONNECT_PROJECTID = "006ebb71415ac00246c619155f5d56f7";
 
-export const ZERO = BigInt(0);
-export const MAX_UINT256 = BigInt(0xffffffffffffffffffffffffffffffffffffffff);
+export const ZERO = 0n;
+export const MAX_UINT256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn;
+export const WEI_PER_ETHER = 1000000000000000000n;
 
 export const paragraph_aboutSDai = `sDAI are shares of a vault with DAI, which is earning interest in MakerDAO DSR. You can use it in Gnosis DeFi like you would use DAI.`;

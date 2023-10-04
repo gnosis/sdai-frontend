@@ -20,7 +20,7 @@ import { Token } from "../TokenSelector/TokenSelector";
 import { bigIntMax, bigIntMin } from "../../utils/utils";
 
 // Constants
-const GAS_PRICE_OFFSET = BigInt("10000000000000000");
+const GAS_PRICE_OFFSET = 10000000000000000n;
 
 enum Actions {
   DepositXDAI,
@@ -44,11 +44,8 @@ const Form: React.FC = () => {
       depositAllowance: state.depositAllowance,
       withdrawAllowance: state.withdrawAllowance,
     })),
+    true,
   );
-
-  if (!account) {
-    throw new Error("rendered without account");
-  }
 
   // Token input
   const { chain, address, depositAllowance, withdrawAllowance, sharesBalance } = account;
@@ -109,7 +106,7 @@ const Form: React.FC = () => {
       name: "Withdraw WXDAI",
       action: Actions.WithdrawWXDAI,
     };
-  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount]);
+  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount, sharesAmount]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
@@ -174,9 +171,9 @@ const Form: React.FC = () => {
 
   // Store update
   // TODO: Move this to a global store
-  const totalShares = useTotalSupply(chain.ERC4626_VAULT_ADDRESS);
-  const { dripRate, lastClaimTimestamp } = useReceiverData(chain.BRIDGE_RECEIVER);
-  const vaultAPY = useVaultAPY(chain.VAULT_ADAPTER_ADDRESS);
+  const totalShares = useTotalSupply();
+  const { dripRate, lastClaimTimestamp } = useReceiverData();
+  const vaultAPY = useVaultAPY();
 
   // TODO: Not all of these need to be refetched constantly
   const refetch = () => {

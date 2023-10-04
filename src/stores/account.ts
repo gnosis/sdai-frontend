@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import { FetchBalanceResult, fetchBalance, readContract, watchAccount, watchNetwork } from "wagmi/actions";
+import {
+  FetchBalanceResult,
+  fetchBalance,
+  readContract,
+  watchAccount,
+  watchNetwork,
+} from "wagmi/actions";
 
 // Constants
 import { supportedChains, ChainData } from "../constants";
@@ -42,7 +48,7 @@ export type AnyAccountStore = AccountStoreLoaded | AccountStoreLoading | Account
 export const getChainData = (id: number) => {
   const data = supportedChains.find(x => x.chainId === id);
   return data;
-}
+};
 
 export const useAccountStore = create<AnyAccountStore>((set, get) => ({
   chainData: supportedChains[0],
@@ -80,6 +86,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       getTokenAllowance(chainData.RESERVE_TOKEN_ADDRESS, address, chainData.VAULT_ADAPTER_ADDRESS),
       getTokenAllowance(chainData.ERC4626_VAULT_ADDRESS, address, chainData.VAULT_ADAPTER_ADDRESS),
     ]);
+
     set({
       loading: false,
       nativeBalance,
@@ -99,15 +106,25 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
         const data = getChainData(network.chain.id);
         data && get().setChainData(data);
       }
-    })
-
-  }
+    });
+  },
 }));
 
-export const isLoadedAccountStore = (store: AccountStore): store is AccountStoreLoaded => {
+export const isLoadedAccountStore = <
+  S extends Partial<AccountStore> & Pick<AccountStore, "address" | "loading">,
+>(
+  store: S,
+): store is Partial<AccountStoreLoaded> & Pick<AccountStoreLoaded, "address" | "loading"> & S => {
   return !!store.address && !store.loading;
 };
 
-export const useLoadedAccountStore = <U>(selector: (state: AccountStoreLoaded) => U): U | false => {
-  return useAccountStore(state => isLoadedAccountStore(state) && selector(state));
+export const useLoadedAccountStore = <U, T extends true | false>(
+  selector: (state: AccountStoreLoaded) => U,
+  throwError?: T,
+): U | (T extends true ? never : false) => {
+  const result = useAccountStore(state => isLoadedAccountStore(state) && selector(state));
+  if (!result && throwError) {
+    throw new Error("rendered without account");
+  }
+  return result as U;
 };

@@ -42,10 +42,8 @@ const Main: React.FC = () => {
   // Token input
   const { chain, address, sharesBalance } = account;
   // Cards
-  const vaultAPY = useVaultAPY(chain.VAULT_ADAPTER_ADDRESS).data;
+  const vaultAPY = useVaultAPY().data;
   const sharesValue = useAccountShareValue();
-
-  console.log(chain.chainId, vaultAPY, sharesValue)
 
   return (
     <main className="w-full h-full m-auto">
