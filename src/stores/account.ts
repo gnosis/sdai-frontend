@@ -14,10 +14,11 @@ import { erc4626ABI } from "wagmi";
 import { getTokenAllowance } from "../utils/wagmi";
 
 // Fetching singleton
-let currentingLoading:
+let currentlyLoading:
   | {
       chainData: ChainData;
       address: `0x${string}`;
+      fetching: boolean;
     }
   | undefined;
 
@@ -84,11 +85,11 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
     }
 
     // This prevents the fetch function from running twice for the same address and chainData
-    if (currentingLoading?.address === address && currentingLoading?.chainData === chainData) {
-      return;
+    if (currentlyLoading?.address === address && currentlyLoading.chainData === chainData && currentlyLoading.fetching) {
+   //   return;
     }
 
-    currentingLoading = { address, chainData };
+    currentlyLoading = { address, chainData, fetching:true };
 
     const [
       nativeBalance,
@@ -111,8 +112,9 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       getTokenAllowance(chainData.ERC4626_VAULT_ADDRESS, address, chainData.VAULT_ADAPTER_ADDRESS),
     ]);
 
+    currentlyLoading.fetching = false;
     // This makes sure that the address and chainData haven't change since the fetch function was called
-    if (currentingLoading.address !== address || currentingLoading.chainData !== chainData) {
+    if (currentlyLoading.address !== address || currentlyLoading.chainData !== chainData) {
       return;
     }
 
@@ -125,6 +127,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       depositAllowance,
       withdrawAllowance,
     });
+
   },
   watch: () => {
     const unwatchAccount = watchAccount(account => {
