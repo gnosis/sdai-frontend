@@ -2,7 +2,6 @@ import React from "react";
 import "wagmi/window";
 
 const AddToken: React.FC = () => {
-
   const addTokenToWallet = () =>
     window.ethereum?.request({
       method: "wallet_watchAsset",
@@ -10,7 +9,7 @@ const AddToken: React.FC = () => {
         type: "ERC20",
         options: {
           name: "Savings xDAI",
-          address: "0x20e5eB701E8d711D419D444814308f8c2243461F",
+          address: "0xaf204776c7245bF4147c2612BF6e5972Ee483701",
           symbol: "sDAI",
           decimals: 18,
           image:
