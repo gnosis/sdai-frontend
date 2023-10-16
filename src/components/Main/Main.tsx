@@ -21,22 +21,15 @@ import { useAccountShareValue } from "../../hooks/useAccountShareValue";
 const Main: React.FC = () => {
   const account = useLoadedAccountStore(
     useShallow(state => ({
-      chain: state.chainData,
       address: state.address,
-      nativeBalance: state.nativeBalance,
       sharesBalance: state.sharesBalance,
-      reservesBalance: state.reservesBalance,
-      depositAllowance: state.depositAllowance,
-      withdrawAllowance: state.withdrawAllowance,
     })),
+    true,
   );
-
-  if (!account) {
-    throw new Error("rendered without account");
-  }
 
   // Token input
   const { address, sharesBalance } = account;
+
   // Cards
   const vaultAPY = useVaultAPY().data;
   const sharesValue = useAccountShareValue();
@@ -74,7 +67,7 @@ const Main: React.FC = () => {
               </a>
             </div>
           </div>
-          <div className=" flex flex-col flex-1 w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
+          <div className="flex flex-col flex-1 w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
             <div className="title flex flex-start gap-2">
               <img className="w-5" src={refresh}></img>
               <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>

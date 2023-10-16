@@ -5,35 +5,30 @@ import {
   getPublicClient,
   readContract,
   watchAccount,
-  watchNetwork,
 } from "wagmi/actions";
 
 // Constants
-import { supportedChains, ChainData } from "../constants";
 import { erc4626ABI } from "wagmi";
 import { getTokenAllowance } from "../utils/wagmi";
+import { isLoadedChainStore, useChainStore } from "./chain";
 
 // Fetching singleton
 let currentlyLoading:
   | {
-      chainData: ChainData;
+      chainId: number;
       address: `0x${string}`;
-      fetching: boolean;
     }
   | undefined;
 
 export interface AccountStore {
-  chainData: ChainData;
   address?: `0x${string}`;
   loading: boolean;
-  setChainData: (chainData: ChainData) => Promise<void>;
   setAddress: (address: `0x${string}`) => Promise<void>;
   fetch: () => Promise<void>;
   watch: () => void;
 }
 
 export interface AccountStoreLoaded extends AccountStore {
-  chainData: ChainData;
   address: `0x${string}`;
   loading: false;
   nativeBalance: FetchBalanceResult;
@@ -55,41 +50,40 @@ export interface AccountStoreEmpty extends AccountStore {
 
 export type AnyAccountStore = AccountStoreLoaded | AccountStoreLoading | AccountStoreEmpty;
 
-export const getChainData = (id: number) => {
-  const data = supportedChains.find(x => x.chainId === id);
-  return data;
-};
-
 export const useAccountStore = create<AnyAccountStore>((set, get) => ({
-  chainData: supportedChains[0],
   address: undefined,
   loading: false,
   setAddress: async (address: `0x${string}`) => {
     set({ address, loading: true });
     return get().fetch();
   },
-  setChainData: async (chainData: ChainData) => {
-    set({ chainData });
-    return get().fetch();
-  },
   fetch: async () => {
-    const { address, chainData } = get();
-    if (!address || !chainData) {
+    const { address } = get();
+    if (!address) {
       return;
     }
 
+    // Current chain data
+    const chainState = useChainStore.getState();
+    if (!isLoadedChainStore(chainState)) {
+      return;
+    }
+
+    const { id: chainId, addresses } = chainState;
+    const { reserveToken, vault, vaultAdapter } = addresses;
+
     // Fix a race condition on the first load where the chain is not the connected one
     const client = getPublicClient();
-    if (client.chain.id !== chainData.chainId) {
+    if (client.chain.id !== chainId) {
       return;
     }
 
     // This prevents the fetch function from running twice for the same address and chainData
-    if (currentlyLoading?.address === address && currentlyLoading.chainData === chainData && currentlyLoading.fetching) {
-   //   return;
+    if (currentlyLoading?.address === address && currentlyLoading?.chainId === chainId) {
+      return;
     }
 
-    currentlyLoading = { address, chainData, fetching:true };
+    currentlyLoading = { address, chainId };
 
     const [
       nativeBalance,
@@ -100,24 +94,24 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       withdrawAllowance,
     ] = await Promise.all([
       fetchBalance({ address }),
-      fetchBalance({ address, token: chainData.RESERVE_TOKEN_ADDRESS }),
-      fetchBalance({ token: chainData.ERC4626_VAULT_ADDRESS, address }),
+      fetchBalance({ address, token: reserveToken }),
+      fetchBalance({ token: vault, address }),
       readContract({
-        address: chainData.ERC4626_VAULT_ADDRESS,
+        address: vault,
         abi: erc4626ABI,
         functionName: "maxWithdraw",
         args: [address],
       }),
-      getTokenAllowance(chainData.RESERVE_TOKEN_ADDRESS, address, chainData.VAULT_ADAPTER_ADDRESS),
-      getTokenAllowance(chainData.ERC4626_VAULT_ADDRESS, address, chainData.VAULT_ADAPTER_ADDRESS),
+      getTokenAllowance(reserveToken, address, vaultAdapter),
+      getTokenAllowance(vault, address, vaultAdapter),
     ]);
 
-    currentlyLoading.fetching = false;
     // This makes sure that the address and chainData haven't change since the fetch function was called
-    if (currentlyLoading.address !== address || currentlyLoading.chainData !== chainData) {
+    if (currentlyLoading.address !== address || currentlyLoading.chainId !== chainId) {
       return;
     }
 
+    currentlyLoading = undefined;
     set({
       loading: false,
       nativeBalance,
@@ -127,24 +121,17 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
       depositAllowance,
       withdrawAllowance,
     });
-
   },
   watch: () => {
     const unwatchAccount = watchAccount(account => {
       account.address && get().setAddress(account.address);
     });
 
-    const unwatchNetwork = watchNetwork(network => {
-      network.chain;
-      if (network.chain) {
-        const data = getChainData(network.chain.id);
-        data && get().setChainData(data);
-      }
-    });
+    const unwatchChain = useChainStore.subscribe(() => get().fetch());
 
     return () => {
       unwatchAccount();
-      unwatchNetwork();
+      unwatchChain();
     };
   },
 }));

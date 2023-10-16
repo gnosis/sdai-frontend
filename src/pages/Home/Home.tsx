@@ -1,11 +1,14 @@
 import { useEffect } from "react";
 import { Web3NetworkSwitch, Web3Button, useWeb3Modal } from "@web3modal/react";
-import { useAccountStore } from "../../stores/account";
-import { useLoadedAccountStore } from "../../stores/account";
 import { useShallow } from "zustand/shallow";
 
+// Stores
+import { isLoadedAccountStore, useAccountStore } from "../../stores/account";
+import { isLoadedChainStore, useChainStore } from "../../stores/chain";
 
+// Components
 import Main from "../../components/Main/Main";
+
 // CSS
 import "./Home.css";
 
@@ -13,20 +16,27 @@ import "./Home.css";
 import sDaiLogo from "../../assets/Savings-xDAI.svg";
 
 export const Home = () => {
-
   // Modal close
   const { close } = useWeb3Modal();
 
-  const account = useLoadedAccountStore(
+  const chain = useChainStore(
     useShallow(state => ({
-      chain: state.chainData,
+      id: state.id,
     })),
   );
 
-  const { chain } = account || {};
+  const account = useAccountStore(
+    useShallow(state => ({
+      address: state.address,
+      loading: state.loading,
+    })),
+  );
+
+  const loaded = isLoadedAccountStore(account) && isLoadedChainStore(chain);
 
   useEffect(() => {
     useAccountStore.getState().watch();
+    useChainStore.getState().watch();
   }, []);
 
   /** @notice Escape from connect modal */
@@ -55,9 +65,7 @@ export const Home = () => {
           </div>
         </div>
       </header>
-      {chain ? (
-        <Main />) : null
-      }
+      {loaded ? <Main /> : null}
     </div>
   );
 };

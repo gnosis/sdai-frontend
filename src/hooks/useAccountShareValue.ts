@@ -8,19 +8,13 @@ import { useLoadedAccountStore } from "../stores/account";
 import { useReceiverData, useTotalSupply } from "./useData";
 
 export const useAccountShareValue = () => {
-  const account = useLoadedAccountStore(
+  const { sharesBalance, reservesBalance } = useLoadedAccountStore(
     useShallow(state => ({
-      chain: state.chainData,
-      address: state.address,
       sharesBalance: state.sharesBalance,
       reservesBalance: state.reservesBalance,
     })),
+    true,
   );
-  if (!account) {
-    throw new Error("rendered without account");
-  }
-
-  const { sharesBalance, reservesBalance } = account;
 
   const totalShares = useTotalSupply();
   const { dripRate, lastClaimTimestamp } = useReceiverData();
@@ -28,7 +22,7 @@ export const useAccountShareValue = () => {
 
   useEffect(() => {
     const update = () => {
-      if (account && totalShares.data) {
+      if (totalShares.data) {
         if (lastClaimTimestamp.data && dripRate.data) {
           const currentTime = Math.floor(Date.now() / 1000);
           const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
@@ -45,7 +39,6 @@ export const useAccountShareValue = () => {
     const interval = setInterval(update, 5000);
     return () => clearInterval(interval);
   }, [
-    account,
     lastClaimTimestamp.data,
     dripRate.data,
     totalShares.data,

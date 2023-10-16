@@ -18,6 +18,7 @@ import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 import { Token } from "../TokenSelector/TokenSelector";
 import { bigIntMax, bigIntMin } from "../../utils/utils";
+import { useLoadedChainStore } from "../../stores/chain";
 
 // Constants
 const GAS_PRICE_OFFSET = 10000000000000000n;
@@ -35,13 +36,11 @@ enum Actions {
 const handled: Record<string, boolean> = {};
 const Form: React.FC = () => {
   // Store
+  const { addresses } = useLoadedChainStore(useShallow(({ addresses }) => ({ addresses })));
   const account = useLoadedAccountStore(
     useShallow(state => ({
-      chain: state.chainData,
       address: state.address,
-      nativeBalance: state.nativeBalance,
       sharesBalance: state.sharesBalance,
-      reservesBalance: state.reservesBalance,
       depositAllowance: state.depositAllowance,
       withdrawAllowance: state.withdrawAllowance,
     })),
@@ -49,7 +48,7 @@ const Form: React.FC = () => {
   );
 
   // Token input
-  const { chain, address, depositAllowance, withdrawAllowance, sharesBalance } = account;
+  const { address, depositAllowance, withdrawAllowance, sharesBalance } = account;
   const [tokenInput, setTokenInput] = useState<{
     token: Token;
     balance: bigint;
@@ -102,7 +101,8 @@ const Form: React.FC = () => {
         action: Actions.WithdrawXDAI,
       };
     }
-    if (chain.VAULT_ADAPTER_ADDRESS === chain.ERC4626_VAULT_ADDRESS){
+
+    if (addresses.vaultAdapter === addresses.vault) {
       return {
         name: "Withdraw WXDAI From Vault",
         action: Actions.WithdrawFromVault,
@@ -113,21 +113,21 @@ const Form: React.FC = () => {
       name: "Withdraw WXDAI",
       action: Actions.WithdrawWXDAI,
     };
-  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount, sharesAmount]);
+  }, [isDeposit, isNative, depositAllowance, withdrawAllowance, amount, sharesAmount, addresses]);
 
   const approveWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.RESERVE_TOKEN_ADDRESS,
+      address: addresses.reserveToken,
       abi: erc20ABI,
       functionName: "approve",
-      args: [chain.VAULT_ADAPTER_ADDRESS, amount],
+      args: [addresses.vaultAdapter, amount],
       enabled: action.action === Actions.ApproveWXDAI,
     }).config,
   );
 
   const depositXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.VAULT_ADAPTER_ADDRESS,
+      address: addresses.vaultAdapter,
       abi: VaultAdapter,
       functionName: "depositXDAI",
       args: [receiver],
@@ -138,7 +138,7 @@ const Form: React.FC = () => {
 
   const depositWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.VAULT_ADAPTER_ADDRESS,
+      address: addresses.vaultAdapter,
       abi: VaultAdapter,
       functionName: "deposit",
       args: [amount, receiver],
@@ -148,17 +148,17 @@ const Form: React.FC = () => {
 
   const approveSDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.ERC4626_VAULT_ADDRESS,
+      address: addresses.vault,
       abi: erc20ABI,
       functionName: "approve",
-      args: [chain.VAULT_ADAPTER_ADDRESS, MAX_UINT256],
+      args: [addresses.vaultAdapter, MAX_UINT256],
       enabled: action.action === Actions.ApproveSDAI,
     }).config,
   );
 
   const withdrawWXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.VAULT_ADAPTER_ADDRESS,
+      address: addresses.vaultAdapter,
       abi: VaultAdapter,
       functionName: amountIsMax ? "redeem" : "withdraw",
       args: [amountIsMax ? sharesBalance.value : amount, receiver],
@@ -168,7 +168,7 @@ const Form: React.FC = () => {
 
   const withdrawXDAI = useContractWrite(
     usePrepareContractWrite({
-      address: chain.VAULT_ADAPTER_ADDRESS,
+      address: addresses.vaultAdapter,
       abi: VaultAdapter,
       functionName: amountIsMax ? "redeemXDAI" : "withdrawXDAI",
       args: [amountIsMax ? sharesBalance.value : amount, receiver],
@@ -176,14 +176,14 @@ const Form: React.FC = () => {
     }).config,
   );
 
-    const WithdrawFromVault = useContractWrite(
-      usePrepareContractWrite({
-        address: chain.ERC4626_VAULT_ADDRESS,
-        abi: erc4626ABI,
-        functionName: amountIsMax ? "redeem" : "withdraw",
-        args: [amountIsMax ? sharesBalance.value : amount, receiver, receiver],
-        enabled: action.action === Actions.WithdrawFromVault,
-      }).config,
+  const WithdrawFromVault = useContractWrite(
+    usePrepareContractWrite({
+      address: addresses.vault,
+      abi: erc4626ABI,
+      functionName: amountIsMax ? "redeem" : "withdraw",
+      args: [amountIsMax ? sharesBalance.value : amount, receiver, receiver],
+      enabled: action.action === Actions.WithdrawFromVault,
+    }).config,
   );
 
   // Store update
