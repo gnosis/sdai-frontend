@@ -4,10 +4,10 @@ import { useContractRead, erc4626ABI } from "wagmi";
 import { BridgeReceiver } from "../abis/BridgeReceiver";
 
 // Stores
-import { useLoadedAccountStore } from "../stores/account";
+import { useLoadedChainStore } from "../stores/chain";
 
 export const useTotalSupply = () => {
-  const address = useLoadedAccountStore(state => state.chainData.ERC4626_VAULT_ADDRESS, true);
+  const address = useLoadedChainStore(state => state.addresses.vault);
   return useContractRead({
     address,
     abi: erc4626ABI,
@@ -17,7 +17,7 @@ export const useTotalSupply = () => {
 
 /** @notice total reserves */
 export const useTotalReserves = () => {
-  const address = useLoadedAccountStore(state => state.chainData.ERC4626_VAULT_ADDRESS, true);
+  const address = useLoadedChainStore(state => state.addresses.vault);
   return useContractRead({
     address,
     abi: erc4626ABI,
@@ -27,7 +27,7 @@ export const useTotalReserves = () => {
 
 /** @notice vault APY */
 export const useVaultAPY = () => {
-  const address = useLoadedAccountStore(state => state.chainData.BRIDGE_RECEIVER, true);
+  const address = useLoadedChainStore(state => state.addresses.bridgeReceiver);
   return useContractRead({
     address,
     abi: BridgeReceiver,
@@ -37,7 +37,7 @@ export const useVaultAPY = () => {
 
 /** @notice vault APY */
 export const useReceiverData = () => {
-  const address = useLoadedAccountStore(state => state.chainData.BRIDGE_RECEIVER, true);
+  const address = useLoadedChainStore(state => state.addresses.bridgeReceiver);
   const lastClaimTimestamp = useContractRead({
     address,
     abi: BridgeReceiver,
@@ -55,7 +55,7 @@ export const useReceiverData = () => {
 
 /** @notice user token Balance */
 export const useUserReservesBalance = (user: `0x${string}` | undefined) => {
-  const address = useLoadedAccountStore(state => state.chainData.ERC4626_VAULT_ADDRESS, true);
+  const address = useLoadedChainStore(state => state.addresses.vault);
   return useContractRead({
     address,
     abi: erc4626ABI,
@@ -66,7 +66,7 @@ export const useUserReservesBalance = (user: `0x${string}` | undefined) => {
 
 /** @notice Convert shares */
 export const useConvertToAssets = (shares: bigint) => {
-  const address = useLoadedAccountStore(state => state.chainData.ERC4626_VAULT_ADDRESS, true);
+  const address = useLoadedChainStore(state => state.addresses.vault);
   return useContractRead({
     address,
     abi: erc4626ABI,
@@ -77,7 +77,7 @@ export const useConvertToAssets = (shares: bigint) => {
 
 /** @notice Convert assets */
 export const useConvertToShares = (deposits?: bigint) => {
-  const address = useLoadedAccountStore(state => state.chainData.ERC4626_VAULT_ADDRESS, true);
+  const address = useLoadedChainStore(state => state.addresses.vault);
   return useContractRead({
     address,
     abi: erc4626ABI,
