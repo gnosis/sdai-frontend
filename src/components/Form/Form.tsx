@@ -36,7 +36,7 @@ enum Actions {
 const handled: Record<string, boolean> = {};
 const Form: React.FC = () => {
   // Store
-  const { addresses } = useLoadedChainStore(useShallow(({ addresses }) => ({ addresses })));
+  const addresses = useLoadedChainStore(({ addresses }) => addresses);
   const account = useLoadedAccountStore(
     useShallow(state => ({
       address: state.address,
