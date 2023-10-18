@@ -74,7 +74,7 @@ const Main: React.FC = () => {
               <div className="text-[#716E64] font-bold text-base">Need to bridge or swap?</div>
             </div>
             <div className="text-[#45433C] font-normal text-l">
-              {"Visit "}
+              Visit
               <a
                 className="font-semibold"
                 href="https://jumper.exchange/?fromChain=1&fromToken=0x6b175474e89094c44da98b954eedeac495271d0f&toChain=100&toToken=0x0000000000000000000000000000000000000000"

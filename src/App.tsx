@@ -59,7 +59,7 @@ function App() {
           "--w3m-accent-fill-color": "#1C352A",
           "--w3m-overlay-background-color": "#3A6657",
         }}
-        themeMode={"dark"}
+        themeMode="dark"
       />
     </div>
   );
