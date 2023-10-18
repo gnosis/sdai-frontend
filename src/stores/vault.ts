@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { erc4626ABI } from "wagmi";
-import { getPublicClient, readContract } from "wagmi/actions";
+import { getPublicClient, readContract, watchContractEvent } from "wagmi/actions";
 import { useShallow } from "zustand/shallow";
 
 // Hooks
@@ -11,6 +11,12 @@ import { BridgeReceiver } from "../abis/BridgeReceiver";
 
 // Fetching singleton
 let currentlyLoading: number | undefined;
+let watching:
+  | {
+      chainId: number;
+      unwatch: () => void | undefined;
+    }
+  | undefined;
 
 export interface VaultStore {
   loading: boolean;
@@ -32,6 +38,54 @@ export interface VaultStoreLoaded extends VaultStore {
 }
 
 export type AnyVaultStore = VaultStoreNotLoaded | VaultStoreLoaded;
+
+const watchEvents = (
+  chainId: number,
+  vault: `0x${string}`,
+  bridgeReceiver: `0x${string}`,
+  fetch: () => void,
+) => {
+  if (watching && watching.chainId !== chainId) {
+    watching.unwatch();
+    watching = undefined;
+  }
+
+  const unwatchDeposit = watchContractEvent(
+    {
+      address: vault,
+      abi: erc4626ABI,
+      eventName: "Deposit",
+    },
+    fetch,
+  );
+
+  const unwatchWithdraw = watchContractEvent(
+    {
+      address: vault,
+      abi: erc4626ABI,
+      eventName: "Withdraw",
+    },
+    fetch,
+  );
+
+  const unwatchClaimed = watchContractEvent(
+    {
+      address: bridgeReceiver,
+      abi: BridgeReceiver,
+      eventName: "Claimed",
+    },
+    fetch,
+  );
+
+  watching = {
+    chainId,
+    unwatch: () => {
+      unwatchDeposit();
+      unwatchWithdraw();
+      unwatchClaimed();
+    },
+  };
+};
 
 export const useVaultStore = create<AnyVaultStore>((set, get) => ({
   loading: true,
@@ -57,6 +111,9 @@ export const useVaultStore = create<AnyVaultStore>((set, get) => ({
     }
 
     currentlyLoading = chainId;
+
+    // Subscribe to deposit events
+    watchEvents(chainId, vault, bridgeReceiver, () => get().fetch());
 
     // Fetch data
     const [totalSupply, totalAssets, apy, lastClaimTimestamp, dripRate] = await Promise.all([
