@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { Web3NetworkSwitch, Web3Button, useWeb3Modal } from "@web3modal/react";
-import { useShallow } from "zustand/shallow";
 
 // Stores
-import { isLoadedAccountStore, useAccountStore } from "../../stores/account";
-import { isLoadedChainStore, useChainStore } from "../../stores/chain";
+import { useAccountStore, useIsAccountStoreLoaded } from "../../stores/account";
+import { useChainStore, useIsChainStoreLoaded } from "../../stores/chain";
+import { useIsVaultStoreLoaded, useVaultStore } from "../../stores/vault";
 
 // Components
 import Main from "../../components/Main/Main";
@@ -19,24 +19,16 @@ export const Home = () => {
   // Modal close
   const { close } = useWeb3Modal();
 
-  const chain = useChainStore(
-    useShallow(state => ({
-      id: state.id,
-    })),
-  );
-
-  const account = useAccountStore(
-    useShallow(state => ({
-      address: state.address,
-      loading: state.loading,
-    })),
-  );
-
-  const loaded = isLoadedAccountStore(account) && isLoadedChainStore(chain);
+  // Loaded state
+  const accountStoreLoaded = useIsAccountStoreLoaded();
+  const chainStoreLoaded = useIsChainStoreLoaded();
+  const vaultStoreLoaded = useIsVaultStoreLoaded();
+  const loaded = accountStoreLoaded && chainStoreLoaded && vaultStoreLoaded;
 
   useEffect(() => {
     useAccountStore.getState().watch();
     useChainStore.getState().watch();
+    useVaultStore.getState().watch();
   }, []);
 
   /** @notice Escape from connect modal */

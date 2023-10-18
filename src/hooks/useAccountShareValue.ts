@@ -3,9 +3,7 @@ import { useShallow } from "zustand/shallow";
 
 // Stores
 import { useLoadedAccountStore } from "../stores/account";
-
-// Hooks
-import { useReceiverData, useTotalSupply } from "./useData";
+import { useLoadedVaultStore } from "../stores/vault";
 
 export const useAccountShareValue = () => {
   const { sharesBalance, reservesBalance } = useLoadedAccountStore(
@@ -16,34 +14,36 @@ export const useAccountShareValue = () => {
     true,
   );
 
-  const totalShares = useTotalSupply();
-  const { dripRate, lastClaimTimestamp } = useReceiverData();
+  const vault = useLoadedVaultStore(
+    useShallow(state => ({
+      totalSupply: state.totalSupply,
+      dripRate: state.dripRate,
+      lastClaimTimestamp: state.lastClaimTimestamp,
+    })),
+  );
+
   const [sharesValue, setSharesValue] = useState<bigint>(0n);
 
   useEffect(() => {
     const update = () => {
-      if (totalShares.data) {
-        if (lastClaimTimestamp.data && dripRate.data) {
-          const currentTime = Math.floor(Date.now() / 1000);
-          const unclaimedTime = BigInt(currentTime) - lastClaimTimestamp.data;
-          const unclaimedValue = unclaimedTime * dripRate.data;
-          const newSharesValue =
-            reservesBalance + (unclaimedValue * sharesBalance.value) / totalShares.data;
-
-          setSharesValue(newSharesValue);
-        } else setSharesValue(reservesBalance);
+      if (!vault) {
+        setSharesValue(0n);
+        return;
       }
+
+      const currentTime = Math.floor(Date.now() / 1000);
+      const unclaimedTime = BigInt(currentTime) - vault.lastClaimTimestamp;
+      const unclaimedValue = unclaimedTime * vault.dripRate;
+      const newSharesValue =
+        reservesBalance + (unclaimedValue * sharesBalance.value) / vault.totalSupply;
+
+      setSharesValue(newSharesValue);
     };
 
     update();
-    const interval = setInterval(update, 5000);
+    const interval = setInterval(update, 500);
     return () => clearInterval(interval);
-  }, [
-    lastClaimTimestamp.data,
-    dripRate.data,
-    totalShares.data,
-    reservesBalance,
-    sharesBalance.value,
-  ]);
+  }, [vault, reservesBalance, sharesBalance.value]);
+
   return sharesValue;
 };

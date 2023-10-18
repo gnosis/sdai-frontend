@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { watchNetwork } from "wagmi/actions";
+import { useShallow } from "zustand/shallow";
 
 // Constants
 import { ChainConfig, getChainData } from "../constants";
@@ -41,4 +42,13 @@ export const useLoadedChainStore = <U>(selector: (state: ChainStoreLoaded) => U)
     throw new Error("rendered without chain");
   }
   return result as U;
+};
+
+export const useIsChainStoreLoaded = () => {
+  const state = useChainStore(
+    useShallow(state => ({
+      id: state.id,
+    })),
+  );
+  return isLoadedChainStore(state);
 };

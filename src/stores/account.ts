@@ -6,10 +6,13 @@ import {
   readContract,
   watchAccount,
 } from "wagmi/actions";
+import { useShallow } from "zustand/shallow";
+import { erc4626ABI } from "wagmi";
 
 // Constants
-import { erc4626ABI } from "wagmi";
 import { getTokenAllowance } from "../utils/wagmi";
+
+// Hooks
 import { isLoadedChainStore, useChainStore } from "./chain";
 
 // Fetching singleton
@@ -153,4 +156,14 @@ export const useLoadedAccountStore = <U, T extends true | false>(
     throw new Error("rendered without account");
   }
   return result as U;
+};
+
+export const useIsAccountStoreLoaded = () => {
+  const state = useAccountStore(
+    useShallow(state => ({
+      address: state.address,
+      loading: state.loading,
+    })),
+  );
+  return isLoadedAccountStore(state);
 };

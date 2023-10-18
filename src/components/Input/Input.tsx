@@ -1,6 +1,10 @@
-import "./Input.css";
 import { ethers } from "ethers";
-import { useConvertToShares } from "../../hooks/useData";
+
+// Hooks
+import { useConvertToShares } from "../../hooks/useConvertToShares";
+
+// Components
+import "./Input.css";
 
 interface IInputProps {
   amount: bigint;
@@ -8,9 +12,7 @@ interface IInputProps {
 
 const Input: React.FC<IInputProps> = ({ amount }) => {
   const shares = useConvertToShares(amount);
-  const value = (+ethers.formatUnits(shares.data ?? 0n)).toFixed(2);
-
-  // const value = ethers.commify(chosenValue);
+  const value = (+ethers.formatUnits(shares)).toFixed(2);
 
   return <input type="number" disabled value={value} />;
 };

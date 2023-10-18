@@ -3,7 +3,7 @@ import { formatUnits, parseUnits } from "viem";
 import { useShallow } from "zustand/shallow";
 
 // Hooks
-import { useConvertToShares } from "../../hooks/useData";
+import { useConvertToShares } from "../../hooks/useConvertToShares";
 
 // Store
 import { useLoadedAccountStore } from "../../stores/account";
@@ -41,7 +41,7 @@ export const TokenInput: React.FC<TokenInputProps> = ({ deposit, onBalanceChange
     : reservesBalance;
 
   // Shares
-  const shares = useConvertToShares(balance).data ?? balance;
+  const shares = useConvertToShares(balance);
 
   // Functions
   const changeBalance = (balance: bigint) => {

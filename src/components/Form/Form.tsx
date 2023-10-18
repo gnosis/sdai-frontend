@@ -12,13 +12,13 @@ import { MAX_UINT256 } from "../../constants";
 import { VaultAdapter } from "../../abis/VaultAdapter";
 
 // Hooks
-import { useReceiverData, useTotalSupply, useVaultAPY } from "../../hooks/useData";
 import { TransactionReceipt } from "viem";
 import { TokenInput } from "../TokenInput/TokenInput";
 import { useAccountStore, useLoadedAccountStore } from "../../stores/account";
 import { Token } from "../TokenSelector/TokenSelector";
 import { bigIntMax, bigIntMin } from "../../utils/utils";
 import { useLoadedChainStore } from "../../stores/chain";
+import { useVaultStore } from "../../stores/vault";
 
 // Constants
 const GAS_PRICE_OFFSET = 10000000000000000n;
@@ -186,20 +186,10 @@ const Form: React.FC = () => {
     }).config,
   );
 
-  // Store update
-  // TODO: Move this to a global store
-  const totalShares = useTotalSupply();
-  const { dripRate, lastClaimTimestamp } = useReceiverData();
-  const vaultAPY = useVaultAPY();
-
   // TODO: Not all of these need to be refetched constantly
   const refetch = () => {
-    totalShares.refetch();
-    dripRate.refetch();
-    lastClaimTimestamp.refetch();
-    vaultAPY.refetch();
-
-    // Update account store
+    // Update stores
+    useVaultStore.getState().fetch();
     useAccountStore.getState().fetch();
   };
 

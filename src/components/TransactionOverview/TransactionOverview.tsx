@@ -4,7 +4,8 @@ import { formatUnits } from "ethers";
 import { type Token } from "../TokenSelector/TokenSelector";
 
 // Hooks
-import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
+import { useConvertToAssets } from "../../hooks/useConvertToAssets";
+import { useConvertToShares } from "../../hooks/useConvertToShares";
 import { WEI_PER_ETHER } from "../../constants";
 
 export type TokenInputProps = {
@@ -13,9 +14,9 @@ export type TokenInputProps = {
 };
 
 const TransactionOverview: React.FC<TokenInputProps> = ({ isDeposit, tokenInput }) => {
-  const baseAssets = useConvertToAssets(WEI_PER_ETHER).data;
-  const baseShares = useConvertToShares(WEI_PER_ETHER).data;
-  const toShares = useConvertToShares(tokenInput?.balance ?? 0n).data;
+  const baseAssets = useConvertToAssets(WEI_PER_ETHER);
+  const baseShares = useConvertToShares(WEI_PER_ETHER);
+  const toShares = useConvertToShares(tokenInput?.balance ?? 0n);
 
   const formatConvert = (balance?: bigint) => {
     return new Number(formatUnits(balance ?? 0n, 18)).toFixed(4);

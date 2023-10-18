@@ -13,10 +13,11 @@ import refresh from "../../assets/refresh.svg";
 
 // Constants
 import { paragraph_aboutSDai } from "../../constants";
+
 // Hooks
-import { useVaultAPY } from "../../hooks/useData";
 import { useLoadedAccountStore } from "../../stores/account";
 import { useAccountShareValue } from "../../hooks/useAccountShareValue";
+import { useLoadedVaultStore } from "../../stores/vault";
 
 const Main: React.FC = () => {
   const account = useLoadedAccountStore(
@@ -31,7 +32,7 @@ const Main: React.FC = () => {
   const { address, sharesBalance } = account;
 
   // Cards
-  const vaultAPY = useVaultAPY().data;
+  const apy = useLoadedVaultStore(state => state.apy);
   const sharesValue = useAccountShareValue();
 
   return (
@@ -39,10 +40,10 @@ const Main: React.FC = () => {
       <div className="bg-[#f3f0ea] rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24 ">
         {address ? (
           <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
-            <div className="flex flex-col items-center justify-center mx-auto mt-0 sm:-mt-24 w-full gap-1 sm:flex-wrap-reverse sm:flex-row sm:gap-5 sm:flex-row md:flex-nowrap 2xl:gap-10 ">
+            <div className="flex flex-col items-center justify-center mx-auto mt-0 sm:-mt-24 w-full gap-1 sm:flex-wrap-reverse sm:flex-row sm:gap-5 md:flex-nowrap 2xl:gap-10 ">
               <Card title="My Shares" value={sharesBalance.value ?? BigInt(0)} currency="sDAI" />
               <Card title="Value" value={sharesValue} currency="xDAI" smallDecimals={3} />
-              <Card title="Vault APY" value={vaultAPY ? vaultAPY * 100n : 0n} currency="%" />
+              <Card title="Vault APY" value={apy ? apy * 100n : 0n} currency="%" />
             </div>
 
             <Form />
