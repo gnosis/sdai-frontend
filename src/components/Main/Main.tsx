@@ -17,7 +17,7 @@ import { paragraph_aboutSDai } from "../../constants";
 // Hooks
 import { useLoadedAccountStore } from "../../stores/account";
 import { useAccountShareValue } from "../../hooks/useAccountShareValue";
-import { useLoadedVaultStore } from "../../stores/vault";
+import { useVaultAPY } from "../../hooks/useVaultAPY";
 
 const Main: React.FC = () => {
   const account = useLoadedAccountStore(
@@ -32,7 +32,7 @@ const Main: React.FC = () => {
   const { address, sharesBalance } = account;
 
   // Cards
-  const apy = useLoadedVaultStore(state => state.apy);
+  const apy = useVaultAPY();
   const sharesValue = useAccountShareValue();
 
   return (

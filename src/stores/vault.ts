@@ -32,7 +32,6 @@ export interface VaultStoreLoaded extends VaultStore {
   loading: false;
   totalSupply: bigint;
   totalAssets: bigint;
-  apy: bigint;
   lastClaimTimestamp: bigint;
   dripRate: bigint;
 }
@@ -116,7 +115,7 @@ export const useVaultStore = create<AnyVaultStore>((set, get) => ({
     watchEvents(chainId, vault, bridgeReceiver, () => get().fetch());
 
     // Fetch data
-    const [totalSupply, totalAssets, apy, lastClaimTimestamp, dripRate] = await Promise.all([
+    const [totalSupply, totalAssets, lastClaimTimestamp, dripRate] = await Promise.all([
       readContract({
         address: vault,
         abi: erc4626ABI,
@@ -126,11 +125,6 @@ export const useVaultStore = create<AnyVaultStore>((set, get) => ({
         address: vault,
         abi: erc4626ABI,
         functionName: "totalAssets",
-      }),
-      readContract({
-        address: bridgeReceiver,
-        abi: BridgeReceiver,
-        functionName: "vaultAPY",
       }),
       readContract({
         address: bridgeReceiver,
@@ -154,7 +148,6 @@ export const useVaultStore = create<AnyVaultStore>((set, get) => ({
       loading: false,
       totalSupply,
       totalAssets,
-      apy,
       lastClaimTimestamp,
       dripRate,
     });
