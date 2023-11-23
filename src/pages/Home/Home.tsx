@@ -111,38 +111,7 @@ export const Home = () => {
         </div>
       </main>
       <footer className="bg-[#1C352A]">
-      <div className=" h-fit text-base">
-          <div className="m-auto flex flex-col w-full p-5 sm:p-0 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl gap-12 sm:flex-row">
-            <div className=" flex flex-col flex-1 w-full sm:w-3/5 sm:my-5 gap-2">
-              <div className="title flex flex-start gap-2 items-start content-start">
-                <img className="w-5" src={union}></img>
-                <div className="text-[#6B6242] font-bold">What is sDAI?</div>
-              </div>
-              <div className="text-[#45433C] font-normal">{paragraph_aboutSDai}</div>
-              <div className="text-[#3E6957]">
-                <a className="font-semibold" href="https://docs.gnosischain.com/bridges/tokenbridge/xdai-bridge/#savings-xdai" target="_blank">
-                  Learn more
-                </a>
-              </div>
-            </div>
-            <div className="flex flex-col flex-1 w-full sm:w-2/5 sm:my-5 items-start content-start gap-2">
-              <div className="title flex flex-start gap-2">
-                <img className="w-5" src={refresh}></img>
-                <div className="text-[#6B6242] font-bold">Need to bridge or swap?</div>
-              </div>
-              <div className="text-[#3E6957] font-normal">
-                Visit 
-                <a
-                  className="font-semibold px-1"
-                  href="https://jumper.exchange/?fromChain=1&fromToken=0x6b175474e89094c44da98b954eedeac495271d0f&toChain=100&toToken=0x0000000000000000000000000000000000000000"
-                  target="_blank"
-                >
-                  jumper.exchange
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+
       </footer>
     </div>
   );
