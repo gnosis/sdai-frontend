@@ -27,13 +27,12 @@ const Main: React.FC = () => {
   const sharesValue = useAccountShareValue();
 
   return (
-    <div className="m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
+    <div className="bg-transparent m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
       <div className="flex flex-col items-center justify-center mx-auto mt-0 sm:-mt-24 w-full gap-1 sm:flex-wrap-reverse sm:flex-row sm:gap-5 md:flex-nowrap 2xl:gap-10 ">
-        <Card title="My Shares" value={sharesBalance.value ?? BigInt(0)} currency="sDAI" />
-        <Card title="Value" value={sharesValue} currency="xDAI" smallDecimals={3} />
-        <Card title="Vault APY" value={apy ? apy * 100n : 0n} currency="%" />
+        <Card title="MY SHARES" value={sharesBalance.value ?? BigInt(0)} currency="sDAI" />
+        <Card title="VALUE" value={sharesValue} currency="xDAI" smallDecimals={3} />
+        <Card title="VAULT APY" value={apy ? apy * 100n : 0n} currency="%" />
       </div>
-
       <Form />
     </div>
   );
