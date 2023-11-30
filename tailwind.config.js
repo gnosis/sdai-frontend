@@ -5,6 +5,9 @@ export default {
     extend: {
       fontFamily: {
         karla: ["Karla", "sans-serif"],
+      },
+      screens: {
+        'xs': '480px'
       }
     },
   },
