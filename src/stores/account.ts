@@ -29,6 +29,7 @@ export interface AccountStore {
   setAddress: (address: `0x${string}`) => Promise<void>;
   fetch: () => Promise<void>;
   watch: () => void;
+  isDenied: boolean;
 }
 
 export interface AccountStoreLoaded extends AccountStore {
@@ -55,9 +56,17 @@ export type AnyAccountStore = AccountStoreLoaded | AccountStoreLoading | Account
 
 export const useAccountStore = create<AnyAccountStore>((set, get) => ({
   address: undefined,
+  isDenied: false,
   loading: false,
   setAddress: async (address: `0x${string}`) => {
     set({ address, loading: true });
+    try {
+      const response = await fetch(`https://sdai-api.dev.gnosisdev.com/api/v1/denylist/${address}`);
+      const data = await response.json();
+      set({ isDenied: data.denied });
+    } catch (error) {
+      set({ isDenied: false });
+    }
     return get().fetch();
   },
   fetch: async () => {
