@@ -43,6 +43,7 @@ const Form: React.FC = () => {
       sharesBalance: state.sharesBalance,
       depositAllowance: state.depositAllowance,
       withdrawAllowance: state.withdrawAllowance,
+      isDenied: state.isDenied,
     })),
     true,
   );
@@ -279,6 +280,7 @@ const Form: React.FC = () => {
             mutationTrigger={method.write}
             mutationData={method.data}
             onSettled={onSettled}
+            isDenied={account.isDenied}
           />
         </div>
 

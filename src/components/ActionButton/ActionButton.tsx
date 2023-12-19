@@ -7,6 +7,7 @@ interface IActionButtonProps {
   method: string;
   mutationData?: WriteContractResult;
   mutationTrigger?: () => void;
+  isDenied: boolean;
 
   // TODO: Import this type? Define it dynamically somehow?
   onSettled?: (
@@ -21,22 +22,24 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   mutationTrigger,
   mutationData,
   onSettled,
+  isDenied,
 }) => {
-  const { data, error } = useWaitForTransaction({
-    confirmations: 1,
-    hash: mutationData?.hash,
-  });
-
-  useEffect(
-    () => mutationData?.hash && onSettled?.(mutationData.hash, data, error),
-    [onSettled, mutationData?.hash, data, error]
-  );
+  if (!isDenied) {
+    const { data, error } = useWaitForTransaction({
+      confirmations: 1,
+      hash: mutationData?.hash,
+    });
+    useEffect(
+      () => mutationData?.hash && onSettled?.(mutationData.hash, data, error),
+      [onSettled, mutationData?.hash, data, error]
+    );
+  }
 
   return (
     // <div className="full-width">
     <button
-      className="border rounded-md w-full bg-[#DD7143] hover:border-[#DD7143] active:opacity-90 p-4 my-1 text-[#fff] text-center font-semibold text-xl "
-      onClick={() => mutationTrigger?.()}
+      className="border rounded-md w-full bg-[#FFC549] hover:border-[#FFC549] active:opacity-90 p-4 my-1 text-[#1C352A] text-center font-semibold text-xl "
+      onClick={() => { isDenied ? console.error('Action failed') : mutationTrigger?.()}}
     >
       {method}
     </button>
