@@ -3,7 +3,6 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  gap: var(--gap-large);
 }
 
 .full-width {
@@ -23,12 +22,12 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  color:#F3F0EA;
+  color:#133629;
 }
 
 .page-component__header__logo__title {
   margin-top: 5px;
-  font-weight: 500;
+  font-weight: 700;
   font-size: x-large;
 }
 .page-component__header__logo__slogan {
@@ -85,7 +84,6 @@
  *  MODAL
  */
 .page-component__main {
-  background: #f3f0ea;
   border-radius: 100px 100px 0px 0px;
   margin-top: 10rem;
   padding-top: 3rem;
@@ -289,7 +287,7 @@
 
 .page-component__main__input__action-btn {
   border-radius: 6px;
-  background: #FFC549;
+  background: #DD7143;
   box-sizing: border-box;
   padding: var(--padding-large);
   font-size: x-large;
@@ -338,7 +336,7 @@
 
 
 .page-component__cards-data {
-  background-color: #202520;
+  background-color: #E2DCCC;
   opacity: 0.95;
   display: flex;
   flex-direction: column;

@@ -45,7 +45,7 @@ const ethereumClient = new EthereumClient(wagmiConfig, chains);
 
 function App() {
   return (
-    <div className="App">
+    <div className="App bg-gradient-to-b from-[#F0EBDE] to-[#EAE5D9]  min-h-screen">
       <WagmiConfig config={wagmiConfig}>
         <Home />
       </WagmiConfig>
@@ -55,8 +55,8 @@ function App() {
         ethereumClient={ethereumClient}
         themeVariables={{
           "--w3m-font-family": "Roboto, sans-serif",
-          "--w3m-accent-color": "#FFC549",
-          "--w3m-accent-fill-color": "#1C352A",
+          "--w3m-accent-color": "#DD7143",
+          "--w3m-accent-fill-color": "#FFF",
           "--w3m-overlay-background-color": "#3A6657",
         }}
         themeMode="dark"
