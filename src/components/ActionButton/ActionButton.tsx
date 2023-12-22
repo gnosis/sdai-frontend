@@ -1,0 +1,50 @@
+import React, { useEffect } from "react";
+import { TransactionReceipt } from "viem";
+import { useWaitForTransaction } from "wagmi";
+import { WriteContractResult } from "wagmi/actions";
+
+interface IActionButtonProps {
+  method: string;
+  mutationData?: WriteContractResult;
+  mutationTrigger?: () => void;
+  isDenied: boolean;
+
+  // TODO: Import this type? Define it dynamically somehow?
+  onSettled?: (
+    hash: `0x${string}`,
+    data: TransactionReceipt | undefined,
+    error: Error | null
+  ) => void;
+}
+
+const ActionButton: React.FC<IActionButtonProps> = ({
+  method,
+  mutationTrigger,
+  mutationData,
+  onSettled,
+  isDenied,
+}) => {
+  if (!isDenied) {
+    const { data, error } = useWaitForTransaction({
+      confirmations: 1,
+      hash: mutationData?.hash,
+    });
+    useEffect(
+      () => mutationData?.hash && onSettled?.(mutationData.hash, data, error),
+      [onSettled, mutationData?.hash, data, error]
+    );
+  }
+
+  return (
+    // <div className="full-width">
+    <button
+      className="border rounded-md w-full bg-[#FFC549] hover:border-[#FFC549] active:opacity-90 p-4 my-1 text-[#1C352A] text-center font-semibold text-xl "
+      onClick={() => { isDenied ? console.error('Action failed') : mutationTrigger?.()}}
+    >
+      {method}
+    </button>
+    //  </div>
+  );
+};
+
+export default ActionButton;

@@ -1,23 +1,18 @@
-import React, { useState, useEffect, useRef, KeyboardEvent, useCallback } from "react";
-import "./Input.css";
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 
-import { useConvertToAssets, useConvertToShares } from "../../hooks/useData";
+// Hooks
+import { useConvertToShares } from "../../hooks/useConvertToShares";
+
+// Components
+import "./Input.css";
 
 interface IInputProps {
-  deposit: boolean;
-  shares: BigNumber;
-  assets: BigNumber;
+  amount: bigint;
 }
 
-const Input: React.FC<IInputProps> = ({ deposit, shares, assets }) => {
-  const shares_ = useConvertToShares(assets);
-  const assets_ = useConvertToAssets(shares);
-
-  const chosenValue = deposit ? shares_ : assets_;
-  const value = (+ethers.utils.formatUnits(BigNumber.from(chosenValue))).toFixed(2);
-
-  // const value = ethers.utils.commify(chosenValue);
+const Input: React.FC<IInputProps> = ({ amount }) => {
+  const shares = useConvertToShares(amount);
+  const value = (+ethers.formatUnits(shares)).toFixed(2);
 
   return <input type="number" disabled value={value} />;
 };
