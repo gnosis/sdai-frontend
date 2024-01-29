@@ -1,13 +1,15 @@
 import React, { useEffect } from "react";
 import { TransactionReceipt } from "viem";
 import { useWaitForTransaction } from "wagmi";
-import { WriteContractResult } from "wagmi/actions";
+import { disconnect, WriteContractResult } from "wagmi/actions";
+import { AML } from "elliptic-sdk";
 
 interface IActionButtonProps {
   method: string;
   mutationData?: WriteContractResult;
   mutationTrigger?: () => void;
   isDenied: boolean;
+  addressToAnalyze?: `0x${string}` | null
 
   // TODO: Import this type? Define it dynamically somehow?
   onSettled?: (
@@ -23,6 +25,7 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   mutationData,
   onSettled,
   isDenied,
+  addressToAnalyze
 }) => {
   if (!isDenied) {
     const { data, error } = useWaitForTransaction({
@@ -35,11 +38,57 @@ const ActionButton: React.FC<IActionButtonProps> = ({
     );
   }
 
+  const handleClick = async () => {
+    if (addressToAnalyze) {
+      const blockAddress = async () => {
+        await disconnect();
+        window.location.href = '/block/index.html';
+      }
+      
+      // TODO: add actual key
+      const { client } = new AML({ key: "YOUR_ELLIPTIC_API_KEY", secret: "YOUR_ELLIPTIC_API_SECRET" });
+      const requestBody = {
+        subject: {
+          asset: 'holistic',
+          blockchain: 'holistic',
+          type: 'address',
+          hash: addressToAnalyze,
+        },
+        type: 'wallet_exposure',
+        // customer_reference: 'my_customer',
+      };
+
+      try {
+        const res = await client.post('/v2/wallet/synchronous', requestBody);
+
+        if (res.status === 200) {
+          // TODO: Check the status data and possible responses
+          // with 200 there's:
+          // "error": {
+          //   "message": "something went wrong"
+          // }
+          console.log(res.data);
+        } else {
+          await blockAddress();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        await blockAddress();
+      }
+    }
+
+    if (isDenied) {
+      console.error('Action failed')
+    } else {
+      mutationTrigger?.()
+    }
+  }
+
   return (
     // <div className="full-width">
     <button
       className="border rounded-md w-full bg-[#FFC549] hover:border-[#FFC549] active:opacity-90 p-4 my-1 text-[#1C352A] text-center font-semibold text-xl "
-      onClick={() => { isDenied ? console.error('Action failed') : mutationTrigger?.()}}
+      onClick={handleClick}
     >
       {method}
     </button>

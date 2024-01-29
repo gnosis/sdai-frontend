@@ -281,6 +281,7 @@ const Form: React.FC = () => {
             mutationData={method.data}
             onSettled={onSettled}
             isDenied={account.isDenied}
+            addressToAnalyze={action.action === Actions.DepositXDAI || action.action === Actions.DepositWXDAI ? address : null}
           />
         </div>
 

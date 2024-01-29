@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useShallow } from "zustand/shallow";
-import { AML } from "elliptic-sdk";
-import { disconnect } from 'wagmi/actions'
 
 // Components
 import Card from "../../components/Card/Card";
@@ -27,50 +25,6 @@ const Main: React.FC = () => {
   // Cards
   const apy = useVaultAPY();
   const sharesValue = useAccountShareValue();
-  
-  useEffect(() => {
-    const blockAddress = async () => {
-      await disconnect();
-      window.location.href = '/block/index.html';
-    }
-
-    const runAnalysis = async () => {
-      if (account.address) {
-        // TODO: add actual key
-        const { client } = new AML({ key: "YOUR_ELLIPTIC_API_KEY", secret: "YOUR_ELLIPTIC_API_SECRET" });
-        const requestBody = {
-          subject: {
-            asset: 'holistic',
-            blockchain: 'holistic',
-            type: 'address',
-            hash: account.address,
-          },
-          type: 'wallet_exposure',
-          customer_reference: 'my_customer',
-        };
-
-        try {
-          const res = await client.post('/v2/wallet/synchronous', requestBody);
-
-          if (res.status === 200) {
-            // TODO: Check the status data and possible responses
-            // with 200 there's:
-            // "error": {
-            //   "message": "something went wrong"
-            // }
-            console.log(res.data);
-          } else {
-            await blockAddress();
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          await blockAddress();
-        }
-      }
-    };
-
-    runAnalysis();
-  }, [account.address])
 
   return (
     <div className="bg-transparent m-auto w-full h-fit p-4 sm:p-1 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl">
