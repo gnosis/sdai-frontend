@@ -4,6 +4,11 @@ import { useWaitForTransaction } from "wagmi";
 import { disconnect, WriteContractResult } from "wagmi/actions";
 import { AML } from "elliptic-sdk";
 
+// TODO it will be exposed
+const ELLIPTIC_API_KEY: string = import.meta.env.VITE_ELLIPTIC_API_KEY ?? ''
+const ELLIPTIC_API_SECRET: string = import.meta.env.VITE_ELLIPTIC_API_SECRET ?? ''
+
+
 interface IActionButtonProps {
   method: string;
   mutationData?: WriteContractResult;
@@ -45,8 +50,7 @@ const ActionButton: React.FC<IActionButtonProps> = ({
         window.location.href = '/block/index.html';
       }
       
-      // TODO: add actual key
-      const { client } = new AML({ key: "YOUR_ELLIPTIC_API_KEY", secret: "YOUR_ELLIPTIC_API_SECRET" });
+      const { client } = new AML({ key: ELLIPTIC_API_KEY, secret: ELLIPTIC_API_SECRET });
       const requestBody = {
         subject: {
           asset: 'holistic',
@@ -77,6 +81,7 @@ const ActionButton: React.FC<IActionButtonProps> = ({
       }
     }
 
+    // isDenied: result from `https://sdai-api.dev.gnosisdev.com/api/v1/denylist/${address}`
     if (isDenied) {
       console.error('Action failed')
     } else {
