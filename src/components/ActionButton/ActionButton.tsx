@@ -3,6 +3,7 @@ import { TransactionReceipt } from "viem";
 import { useWaitForTransaction } from "wagmi";
 import { disconnect, WriteContractResult } from "wagmi/actions";
 import { AML } from "elliptic-sdk";
+import { toast } from 'react-toastify';
 
 // TODO it will be exposed
 const ELLIPTIC_API_KEY: string = import.meta.env.VITE_ELLIPTIC_API_KEY ?? ''
@@ -44,10 +45,16 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   }
 
   const handleClick = async () => {
+    if (isDenied) {
+      toast.error('Action failed');
+      console.error('Action failed');
+      return;
+    }
+
     if (addressToAnalyze) {
       const blockAddress = async () => {
         await disconnect();
-        window.location.href = '/block/index.html';
+        toast.error('Elliptic control not passed, you will be redirected to another page', { onClose: () => window.location.href = '/block/index.html' })
       }
       
       const { client } = new AML({ key: ELLIPTIC_API_KEY, secret: ELLIPTIC_API_SECRET });
@@ -74,19 +81,16 @@ const ActionButton: React.FC<IActionButtonProps> = ({
           console.log(res.data);
         } else {
           await blockAddress();
+          return;
         }
       } catch (error) {
         console.error('Error:', error);
         await blockAddress();
+        return;
       }
     }
-
-    // isDenied: result from `https://sdai-api.dev.gnosisdev.com/api/v1/denylist/${address}`
-    if (isDenied) {
-      console.error('Action failed')
-    } else {
-      mutationTrigger?.()
-    }
+      
+    mutationTrigger?.()
   }
 
   return (

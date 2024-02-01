@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Web3NetworkSwitch, Web3Button, useWeb3Modal } from "@web3modal/react";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Stores
 import { useAccountStore, useIsAccountStoreLoaded } from "../../stores/account";
@@ -72,7 +74,7 @@ export const Home = () => {
           {loaded ? (
             <Main />
           ) : (
-            <div className="page-component__prewallet h-36 py-36 text-[#45433C] text-2xl">
+            <div className="page-component__prewallet h-36 text-[#45433C] text-2xl">
               <h1>Connect your Wallet to Gnosis</h1>
             </div>
           )}
@@ -109,6 +111,7 @@ export const Home = () => {
             </div>
           </div>
         </div>
+        <ToastContainer />
       </main>
       <footer className="bg-[#133629] text-[#f0ebde] font-karla">
         <div className="justify-center pt-6 pb-14 flex box-border">

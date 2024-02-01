@@ -5,6 +5,7 @@ import AddToken from "../../components/AddToken/AddToken";
 import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
 import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
 import { usePrepareContractWrite, useContractWrite, erc20ABI, erc4626ABI } from "wagmi";
+import { toast } from 'react-toastify';
 
 import { MAX_UINT256 } from "../../constants";
 
@@ -201,7 +202,8 @@ const Form: React.FC = () => {
   ) => {
     // TODO: Handle this in the UI
     if (error) {
-      throw error;
+      // throw error;
+      toast.error(error.message);
     }
 
     if (handled[hash] || !data) {
