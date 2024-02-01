@@ -5,7 +5,6 @@ import { disconnect, WriteContractResult } from "wagmi/actions";
 import { AML } from "elliptic-sdk";
 import { toast } from 'react-toastify';
 
-// TODO it will be exposed
 const ELLIPTIC_API_KEY: string = import.meta.env.VITE_ELLIPTIC_API_KEY ?? ''
 const ELLIPTIC_API_SECRET: string = import.meta.env.VITE_ELLIPTIC_API_SECRET ?? ''
 
