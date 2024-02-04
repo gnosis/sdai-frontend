@@ -3,7 +3,8 @@ import { TransactionReceipt } from "viem";
 import { useWaitForTransaction } from "wagmi";
 import { disconnect, WriteContractResult } from "wagmi/actions";
 import { toast } from 'react-toastify';
-import { SDAI_API_URL } from "../../constants"
+import { SDAI_API_URL } from "../../constants";
+import { useLoadingStore } from "../../stores/loading";
 
 interface IActionButtonProps {
   method: string;
@@ -28,6 +29,9 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   isDenied,
   addressToAnalyze
 }) => {
+
+  const { set: setLoading } = useLoadingStore()
+
   if (!isDenied) {
     const { data, error } = useWaitForTransaction({
       confirmations: 1,
@@ -40,9 +44,12 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   }
 
   const handleClick = async () => {
+    setLoading(true);
+
     if (isDenied) {
       toast.error('Action failed');
       console.error('Action failed, is denied');
+      setLoading(false);
       return;
     }
 
@@ -53,6 +60,7 @@ const ActionButton: React.FC<IActionButtonProps> = ({
           { 
             onClose: async () => {
               await disconnect();
+              setLoading(false);
               window.location.href = '/block/index.html'
             }
           })
@@ -77,12 +85,14 @@ const ActionButton: React.FC<IActionButtonProps> = ({
           return;
         }
       } catch (error) {
+        setLoading(false);
         toast.error("Couldn't run AML control");
         return;
       }
     }
-      
+
     mutationTrigger?.();
+    setLoading(false);
   }
 
   return (

@@ -233,7 +233,7 @@ const Form: React.FC = () => {
     `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
 
   return (
-    <div className="m-auto flex flex-col content-center py-10 gap-10 sm:flex-row">
+    <div className="m-auto flex flex-col content-center my-10 gap-10 sm:flex-row">
       <div className="flex flex-col gap-5 rounded-lg w-full sm:w-3/5">
         <div className="page-component__main__action-modal-display">
           <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
