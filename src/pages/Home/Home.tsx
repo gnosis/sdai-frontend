@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Web3NetworkSwitch, Web3Button, useWeb3Modal } from "@web3modal/react";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Stores
 import { useAccountStore, useIsAccountStoreLoaded } from "../../stores/account";
@@ -8,6 +10,7 @@ import { useIsVaultStoreLoaded, useVaultStore } from "../../stores/vault";
 
 // Components
 import Main from "../../components/Main/Main";
+import Loading from "../../components/Loading/Loading";
 
 // CSS
 import "./Home.css";
@@ -21,6 +24,7 @@ import refresh from "../../assets/refresh.svg";
 
 // Constants
 import { paragraph_aboutSDai } from "../../constants";
+import { useLoadingStore } from "../../stores/loading";
 
 export const Home = () => {
   // Modal close
@@ -31,6 +35,8 @@ export const Home = () => {
   const chainStoreLoaded = useIsChainStoreLoaded();
   const vaultStoreLoaded = useIsVaultStoreLoaded();
   const loaded = accountStoreLoaded && chainStoreLoaded && vaultStoreLoaded;
+
+  const { loading } = useLoadingStore();
 
   useEffect(() => {
     useAccountStore.getState().watch();
@@ -44,6 +50,8 @@ export const Home = () => {
       close();
     }
   });
+
+  console.log("loading", loading)
 
   return (
     <div className="page-home">
@@ -68,14 +76,15 @@ export const Home = () => {
         </div>
       </header>
       <main className="w-full h-full mx-auto">
-        <div className="rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24">
+        <div className="rounded-t-3xl mt-0 h-full relative">
           {loaded ? (
             <Main />
           ) : (
-            <div className="page-component__prewallet h-36 py-36 text-[#45433C] text-2xl">
+            <div className="page-component__prewallet h-56 text-[#45433C] text-2xl flex flex-col justify-center sm:mb-10">
               <h1>Connect your Wallet to Gnosis</h1>
             </div>
           )}
+          {loading && <Loading />}
         </div>
         <div className="footer w-full bg-[#F2EEE3] h-fit text-base">
           <div className="m-auto flex flex-col w-full p-5 sm:p-0 sm:w-4/5 md:w-3/4 xl:w-1/2 sm:max-w-4xl gap-12 sm:flex-row">
@@ -109,6 +118,7 @@ export const Home = () => {
             </div>
           </div>
         </div>
+        <ToastContainer />
       </main>
       <footer className="bg-[#133629] text-[#f0ebde] font-karla">
         <div className="justify-center pt-6 pb-14 flex box-border">

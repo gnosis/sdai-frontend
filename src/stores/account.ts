@@ -24,9 +24,9 @@ let currentlyLoading:
   | undefined;
 
 export interface AccountStore {
-  address?: `0x${string}`;
+  address?: `0x${string}` | undefined;
   loading: boolean;
-  setAddress: (address: `0x${string}`) => Promise<void>;
+  setAddress: (address: `0x${string}` | undefined) => Promise<void>;
   fetch: () => Promise<void>;
   watch: () => void;
   isDenied: boolean;
@@ -58,7 +58,7 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
   address: undefined,
   isDenied: false,
   loading: false,
-  setAddress: async (address: `0x${string}`) => {
+  setAddress: async (address: `0x${string}` | undefined) => {
     set({ address, loading: true });
     try {
       const response = await fetch(`https://sdai-api.dev.gnosisdev.com/api/v1/denylist/${address}`);
@@ -136,7 +136,13 @@ export const useAccountStore = create<AnyAccountStore>((set, get) => ({
   },
   watch: () => {
     const unwatchAccount = watchAccount(account => {
+      // account.address && get().setAddress(account.address);
       account.address && get().setAddress(account.address);
+      if (account.address) {
+        get().setAddress(account.address);
+      } else {
+        get().setAddress(undefined);
+      }
     });
 
     const unwatchChain = useChainStore.subscribe(() => get().fetch());

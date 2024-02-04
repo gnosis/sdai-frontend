@@ -5,6 +5,7 @@ import AddToken from "../../components/AddToken/AddToken";
 import TransactionOverview from "../../components/TransactionOverview/TransactionOverview";
 import ContractsOverview from "../../components/ContractsOverview/ContractsOverview";
 import { usePrepareContractWrite, useContractWrite, erc20ABI, erc4626ABI } from "wagmi";
+import { toast } from 'react-toastify';
 
 import { MAX_UINT256 } from "../../constants";
 
@@ -201,7 +202,8 @@ const Form: React.FC = () => {
   ) => {
     // TODO: Handle this in the UI
     if (error) {
-      throw error;
+      // throw error;
+      toast.error(error.message);
     }
 
     if (handled[hash] || !data) {
@@ -231,7 +233,7 @@ const Form: React.FC = () => {
     `page-component__main__action-modal-display__item${deposit === isDeposit ? "__action" : ""}`;
 
   return (
-    <div className="m-auto flex flex-col content-center py-10 gap-10 sm:flex-row">
+    <div className="m-auto flex flex-col content-center my-10 gap-10 sm:flex-row">
       <div className="flex flex-col gap-5 rounded-lg w-full sm:w-3/5">
         <div className="page-component__main__action-modal-display">
           <div className={actionModalDisplay(true)} onClick={() => setIsDeposit(true)}>
@@ -281,6 +283,7 @@ const Form: React.FC = () => {
             mutationData={method.data}
             onSettled={onSettled}
             isDenied={account.isDenied}
+            addressToAnalyze={action.action === Actions.DepositXDAI || action.action === Actions.DepositWXDAI ? address : null}
           />
         </div>
 
