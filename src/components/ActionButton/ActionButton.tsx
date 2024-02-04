@@ -2,12 +2,8 @@ import React, { useEffect } from "react";
 import { TransactionReceipt } from "viem";
 import { useWaitForTransaction } from "wagmi";
 import { disconnect, WriteContractResult } from "wagmi/actions";
-import { AML } from "elliptic-sdk";
 import { toast } from 'react-toastify';
-
-const ELLIPTIC_API_KEY: string = import.meta.env.VITE_ELLIPTIC_API_KEY ?? ''
-const ELLIPTIC_API_SECRET: string = import.meta.env.VITE_ELLIPTIC_API_SECRET ?? ''
-
+import { SDAI_API_URL } from "../../constants"
 
 interface IActionButtonProps {
   method: string;
@@ -46,50 +42,47 @@ const ActionButton: React.FC<IActionButtonProps> = ({
   const handleClick = async () => {
     if (isDenied) {
       toast.error('Action failed');
-      console.error('Action failed');
+      console.error('Action failed, is denied');
       return;
     }
 
     if (addressToAnalyze) {
       const blockAddress = async () => {
-        await disconnect();
-        toast.error('Elliptic control not passed, you will be redirected to another page', { onClose: () => window.location.href = '/block/index.html' })
+        toast.error(
+          'AML verification has not been successfully completed, you will be redirected to another page',
+          { 
+            onClose: async () => {
+              await disconnect();
+              window.location.href = '/block/index.html'
+            }
+          })
       }
-      
-      const { client } = new AML({ key: ELLIPTIC_API_KEY, secret: ELLIPTIC_API_SECRET });
-      const requestBody = {
-        subject: {
-          asset: 'holistic',
-          blockchain: 'holistic',
-          type: 'address',
-          hash: addressToAnalyze,
-        },
-        type: 'wallet_exposure',
-        // customer_reference: 'my_customer',
-      };
 
       try {
-        const res = await client.post('/v2/wallet/synchronous', requestBody);
+        const res = await fetch(`${SDAI_API_URL}/analyze-address`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ address: addressToAnalyze })
+        });
 
-        if (res.status === 200) {
-          // TODO: Check the status data and possible responses
-          // with 200 there's:
-          // "error": {
-          //   "message": "something went wrong"
-          // }
-          console.log(res.data);
-        } else {
-          await blockAddress();
+        if (res.status !== 200) {
+          throw new Error();
+        }
+
+        const { isAllowed } = await res.json();
+        if (!isAllowed) {
+          blockAddress();
           return;
         }
       } catch (error) {
-        console.error('Error:', error);
-        await blockAddress();
+        toast.error("Couldn't run AML control");
         return;
       }
     }
       
-    mutationTrigger?.()
+    mutationTrigger?.();
   }
 
   return (

@@ -70,11 +70,11 @@ export const Home = () => {
         </div>
       </header>
       <main className="w-full h-full mx-auto">
-        <div className="rounded-t-3xl mt-0 h-full sm:pt-10 sm:mt-24">
+        <div className="rounded-t-3xl mt-0 h-full sm:pt-10">
           {loaded ? (
             <Main />
           ) : (
-            <div className="page-component__prewallet h-36 text-[#45433C] text-2xl">
+            <div className="page-component__prewallet h-56 text-[#45433C] text-2xl flex flex-col justify-center sm:mb-10">
               <h1>Connect your Wallet to Gnosis</h1>
             </div>
           )}

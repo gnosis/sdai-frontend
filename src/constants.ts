@@ -44,3 +44,5 @@ export const MAX_UINT256 = 0xfffffffffffffffffffffffffffffffffffffffffffffffffff
 export const WEI_PER_ETHER = 1000000000000000000n;
 
 export const paragraph_aboutSDai = `All DAI bridged to Gnosis earn interest at MakerDAO. This interest is given to sDAI holder. You can use sDAI in Gnosis Defi like you would use DAI.`;
+
+export const SDAI_API_URL: string = import.meta.env.VITE_SDAI_API_URL ?? 'https://sdai-api.dev.gnosisdev.com/api/v1/'
